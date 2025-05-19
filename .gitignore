@@ -1,0 +1,35 @@
+## === .NET Build Artifacts ===
+bin/
+obj/
+out/
+
+## === Rider (JetBrains) ===
+.idea/
+*.sln.iml
+
+## === VS / User-specific files ===
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## === Logs ===
+*.log
+
+## === Runtime-generated folders ===
+wwwroot/dist/
+wwwroot/node_modules/
+
+## === Temporary Files ===
+*.tmp
+*.bak
+
+## === OS-specific ===
+.DS_Store
+Thumbs.db
+
+## === Secrets (optional) ===
+appsettings.Development.json
+appsettings.Production.json
+# pokud chceš verzovat base:
+!appsettings.json

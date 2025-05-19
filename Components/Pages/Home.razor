@@ -1,0 +1,46 @@
+﻿@page "/"
+
+@inject NavigationManager Navigation
+
+<PageTitle>Domů</PageTitle>
+
+<article class="main-content">
+    <h1 class="headline">Co si dnes dáš?</h1>
+
+    <div class="search-wrapper">
+        <input class="search-input" placeholder="Hledat produkty..." />
+        <button class="search-button">Hledat</button>
+    </div>
+
+    <div class="product-grid">
+        @foreach (var product in Products)
+        {
+            <div class="product-card">
+                <img src="https://via.placeholder.com/150" alt="@product.Name" class="product-image" />
+                <h3>@product.Name</h3>
+                <p class="in-stock">Skladem</p>
+                <p class="price">@product.Price Kč</p>
+                <button class="buy-button" @onclick="() => AddToCart(product)">Koupit</button>
+            </div>
+        }
+    </div>
+</article>
+
+@code {
+    private List<Product> Products = new()
+    {
+        new Product("Birell", 5),
+        new Product("Anticol", 10),
+        new Product("Bohemia Chips", 10),
+        new Product("Pepsi 0.5l", 15),
+        new Product("7 Days Croissant", 10),
+    };
+
+    private List<Product> Cart = new();
+
+    void AddToCart(Product p) => Cart.Add(p);
+
+    void GoToCart() => Navigation.NavigateTo("/kosik");
+
+    public record Product(string Name, int Price);
+}

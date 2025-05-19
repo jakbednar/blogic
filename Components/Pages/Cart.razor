@@ -1,0 +1,78 @@
+@page "/kosik"
+
+<PageTitle>Košík</PageTitle>
+
+<header style="background-image: url('https://images.unsplash.com/photo-1559561854-266fba0e52c6'); background-size: cover; background-position: center; height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold;">
+    Moje objednávky
+</header>
+
+<div style="padding: 30px; max-width: 900px; margin: auto;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <label>Od <input type="date" value="2022-02-03" style="padding: 8px;" /></label>
+        <label>Do <input type="date" value="2022-05-09" style="padding: 8px;" /></label>
+    </div>
+
+    @if (_cart.Any())
+    {
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #ccc;">
+                    <th style="text-align: left; padding: 10px;">Datum</th>
+                    <th style="text-align: left; padding: 10px;">Čas</th>
+                    <th style="text-align: left; padding: 10px;">Produkt</th>
+                    <th style="text-align: left; padding: 10px;">Cena (Zůstatek kreditů)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _cart)
+                {
+                    <tr>
+                        <td style="padding: 10px;">@DateTime.Now.ToString("dd.MM.yyyy")</td>
+                        <td style="padding: 10px;">@DateTime.Now.ToString("HH:mm")</td>
+                        <td style="padding: 10px;">@item.Name</td>
+                        <td style="padding: 10px;">@item.Price Kč (@UserCredits Kč)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <p style="margin-top: 20px; font-weight: bold;">Cena celkem: @_cart.Sum(p => p.Price) Kč</p>
+
+        @if (!loggedIn)
+        {
+            <button @onclick="Login" style="padding: 10px 20px; border: none; background-color: orange; color: white;">Přihlásit se pro pokračování</button>
+        }
+        else
+        {
+            <button @onclick="Checkout" style="padding: 10px 20px; border: none; background-color: green; color: white;">Odeslat objednávku</button>
+        }
+
+        <button style="margin-left: 20px; padding: 10px 20px; border: 1px solid red; color: red; background-color: transparent;">Export</button>
+    }
+    else
+    {
+        <p>Košík je prázdný.</p>
+    }
+</div>
+
+@code {
+    private List<Product> _cart = new()
+    {
+        new Product("Pepsi 0,5 l (mix)", 15)
+    };
+
+    private int UserCredits = 420;
+    private bool loggedIn = false;
+    private string username = "admin@eshop.cz";
+
+    void Login() => loggedIn = true;
+
+    void Checkout()
+    {
+        UserCredits -= _cart.Sum(p => p.Price);
+        _cart.Clear();
+        Console.WriteLine("Objednávka odeslána");
+    }
+
+    public record Product(string Name, int Price);
+}
