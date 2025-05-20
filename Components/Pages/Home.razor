@@ -6,6 +6,16 @@
 
 <PageTitle>Domů</PageTitle>
 
+<!-- TOAST CONTAINER -->
+<div class="toast-container">
+    @foreach (var message in toastMessages)
+    {
+        <div class="toast-alert">
+            ✅ @message
+        </div>
+    }
+</div>
+
 <article class="main-content">
     <h1 class="headline">Co si dnes dáš?</h1>
 
@@ -13,11 +23,6 @@
         <input class="search-input" placeholder="Hledat produkty..." />
         <button class="search-button">Hledat</button>
     </div>
-    
-    @if (!string.IsNullOrEmpty(addedMessage))
-    {
-        <div class="alert alert-success">@addedMessage</div>
-    }
     
     @if (products == null)
     {
@@ -29,7 +34,7 @@
             @foreach (var product in products)
             {
                 <div class="product-card">
-                    <img src="https://via.placeholder.com/150" alt="@product.Name" class="product-image" />
+                    <img src="@product.ImageUrl" alt="@product.Name" class="product-image" />
                     <h3>@product.Name</h3>
                     <p class="in-stock">Skladem</p>
                     <p class="price">@product.Price Kč</p>
@@ -42,8 +47,8 @@
 
 @code {
     private List<Product>? products;
-    private string? addedMessage;
-    
+    private List<string> toastMessages = new();
+
     protected override void OnInitialized()
     {
         products = ProductService.GetAllProducts();
@@ -52,14 +57,16 @@
     private void AddToCart(Product product)
     {
         CartService.Add(product);
-        addedMessage = $"✅ Přidáno do košíku: {product.Name}";
+        var message = $"Přidáno do košíku: {product.Name}";
+        toastMessages.Add(message);
+        StateHasChanged();
 
-        // Reset zprávy po 3 vteřinách (volitelné)
+        // Odstranění toastu za 3 sekundy
         _ = Task.Run(async () =>
         {
             await Task.Delay(3000);
-            addedMessage = null;
-            InvokeAsync(StateHasChanged); // Překreslení
+            toastMessages.Remove(message);
+            await InvokeAsync(StateHasChanged);
         });
     }
 }

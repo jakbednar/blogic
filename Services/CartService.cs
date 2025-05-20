@@ -19,13 +19,13 @@ public class CartService
     {
         new Product
         {
-            ProductID = 1,
+            ProductID = 3,
             DateCreated = DateTime.UtcNow,
             CreatedBy = 1,
-            Name = "Birell",
-            Price = 5,
-            Quantity = 50,
-            ImageUrl = "https://example.com/images/birell.png",
+            Name = "Bohemia Chips",
+            Price = 10,
+            Quantity = 40,
+            ImageUrl = "https://www.bohemiachips.cz/wp-content/uploads/2023/01/bohemia-redline-sul-647x1024_new.png",
             IsDeleted = false
         },
         new Product
@@ -36,7 +36,7 @@ public class CartService
             Name = "Pepsi 0.5l",
             Price = 15,
             Quantity = 30,
-            ImageUrl = "https://example.com/images/pepsi.png",
+            ImageUrl = "https://digitalcontent.api.tesco.com/v2/media/ghs/d6056d1f-8a49-4d2e-8f3b-2caa55bcd9b9/c27773e3-61f6-4323-bf42-1b2eddf7ae93_178254785.jpeg?h=960&w=960",
             IsDeleted = false
         },
         new Product
@@ -47,7 +47,7 @@ public class CartService
             Name = "7 Days Croissant",
             Price = 10,
             Quantity = 25,
-            ImageUrl = "https://example.com/images/croissant.png",
+            ImageUrl = "https://digitalcontent.api.tesco.com/v2/media/ghs/f68c4acc-2f64-4d0a-84f6-37ad2d3bd6cb/3fb4fffa-c8b1-46c4-80da-f67df8291bbd_1606819767.jpeg?h=960&w=960",
             IsDeleted = false
         }
     };
