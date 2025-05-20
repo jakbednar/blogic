@@ -3,13 +3,13 @@
 
 <div class="layout-container">
     <header class="top-navbar">
-        <div class="brand" @onclick="NavigateHome">
+        <NavLink class="brand" href="">
             DUTY<span class="highlight">FREE</span>
-        </div>
+        </NavLink>
         <div class="navbar-actions">
-            <span class="cart" @onclick="GoToCart">
+            <NavLink class="cart" href="cart">
                 🛒 Košík (@Cart.Count)
-            </span>
+            </NavLink>
         </div>
     </header>
 
@@ -24,9 +24,6 @@
 
 @code {
     private List<Product> Cart = new();
-
-    void GoToCart() => Navigation.NavigateTo("/kosik");
-    void NavigateHome() => Navigation.NavigateTo("/");
-
+    
     public record Product(string Name, int Price);
 }
