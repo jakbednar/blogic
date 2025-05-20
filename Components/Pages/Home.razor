@@ -6,7 +6,6 @@
 
 <PageTitle>Domů</PageTitle>
 
-<!-- TOAST CONTAINER -->
 <div class="toast-container">
     @foreach (var message in toastMessages)
     {
@@ -23,7 +22,7 @@
         <input class="search-input" placeholder="Hledat produkty..." />
         <button class="search-button">Hledat</button>
     </div>
-    
+
     @if (products == null)
     {
         <p>Načítám...</p>
@@ -33,12 +32,27 @@
         <div class="product-grid">
             @foreach (var product in products)
             {
+                var inCart = CartService.GetCartItems()
+                    .FirstOrDefault(ci => ci.Product.ProductID == product.ProductID)?.Quantity ?? 0;
+                var stockLeft = product.Quantity - inCart;
+
                 <div class="product-card">
                     <img src="@product.ImageUrl" alt="@product.Name" class="product-image" />
                     <h3>@product.Name</h3>
-                    <p class="in-stock">Skladem @product.Quantity ks</p>
+                    @if (stockLeft > 0)
+                    {
+                        <p class="in-stock">Skladem @stockLeft ks</p>
+                    }
+                    else
+                    {
+                        <p style="color: red" class="out-stock">Skladem @stockLeft ks</p>
+                    }
                     <p class="price">@product.Price Kč</p>
-                    <button class="buy-button" @onclick="() => AddToCart(product)">Koupit</button>
+                    <button class="buy-button"
+                            @onclick="() => AddToCart(product)"
+                            disabled="@(stockLeft <= 0)">
+                        Koupit
+                    </button>
                 </div>
             }
         </div>
@@ -57,11 +71,11 @@
     private void AddToCart(Product product)
     {
         CartService.Add(product);
+
         var message = $"Přidáno do košíku: {product.Name}";
         toastMessages.Add(message);
         StateHasChanged();
 
-        // Odstranění toastu za 3 sekundy
         _ = Task.Run(async () =>
         {
             await Task.Delay(3000);

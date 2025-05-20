@@ -436,3 +436,18 @@ input[type=number] {
 }
 
 
+.delete-button {
+    background-color: transparent;
+    border: none;
+    font-size: 15px;
+    color: red;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.15s ease, color 0.15s ease;
+    border-radius: 6px;
+}
+
+.delete-button:hover {
+    transform: scale(1.2);
+    color: darkred;
+}
