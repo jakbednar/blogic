@@ -1,0 +1,29 @@
+﻿@inject blogic.Services.CartService CartService
+@implements IDisposable
+@rendermode InteractiveServer
+
+<header class="top-navbar">
+    <NavLink class="brand" href="">
+        DUTY<span class="highlight">FREE</span>
+    </NavLink>
+    <div class="navbar-actions">
+        <NavLink class="cart" href="cart">
+            🛒 Košík (@CartService.GetCartCount())
+        </NavLink>
+        <NavLink class="login-button" href="login">
+            🔐 Přihlášení 
+        </NavLink>
+    </div>
+</header>
+
+@code {
+    protected override void OnInitialized()
+    {
+        CartService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
+    }
+}

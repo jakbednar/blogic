@@ -1,23 +1,8 @@
-﻿@using blogic.Models
-@inherits LayoutComponentBase
-@inject NavigationManager Navigation
-@inject blogic.Services.CartService CartService
+﻿@inherits LayoutComponentBase
+
+<NavMenu />
 
 <div class="layout-container">
-    <header class="top-navbar">
-        <NavLink class="brand" href="">
-            DUTY<span class="highlight">FREE</span>
-        </NavLink>
-        <div class="navbar-actions">
-            <NavLink class="cart" href="cart">
-                🛒 Košík (@CartService.GetCartCount())
-            </NavLink>
-            <NavLink class="login-button" href="login">
-                🔐 Přihlášení 
-            </NavLink>
-        </div>
-    </header>
-
     <div class="page">
         <main>
             <article class="content px-4">
@@ -26,15 +11,3 @@
         </main>
     </div>
 </div>
-
-@code {
-    protected override void OnInitialized()
-    {
-        CartService.OnChange += StateHasChanged;
-    }
-
-    public void Dispose()
-    {
-        CartService.OnChange -= StateHasChanged;
-    }
-}
