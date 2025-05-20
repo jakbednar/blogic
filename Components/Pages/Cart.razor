@@ -40,7 +40,9 @@
                         <input type="number" min="1" @bind="item.Quantity" class="quantity-input" />
                     </td>
                     <td>
-                        <button class="edit-button">Upravit</button>
+                        <button class="delete-button" @onclick="() => RemoveItem(item.Product.ProductID)" title="Odstranit položku">
+                            ❌
+                        </button>
                     </td>
                 </tr>
             }
@@ -64,5 +66,11 @@
     protected override void OnInitialized()
     {
         _cart = CartService.GetCartItems();
+    }
+
+    private void RemoveItem(int productId)
+    {
+        CartService.Remove(productId);        // ✅ používáme správnou metodu
+        _cart = CartService.GetCartItems();   // aktualizace z paměti
     }
 }
