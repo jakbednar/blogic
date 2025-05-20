@@ -417,3 +417,22 @@ input.form-control {
     font-weight: bold;
 }
 
+
+
+/* Vynutit zobrazení šipek v input[type="number"] */
+
+/* Chrome, Safari, Edge */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    opacity: 1;
+    -webkit-appearance: inner-spin-button !important;
+    appearance: auto !important;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+
