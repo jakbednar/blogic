@@ -1,6 +1,8 @@
 ﻿@page "/"
-
-@inject NavigationManager Navigation
+@using blogic.Models
+@inject blogic.Services.ProductService ProductService
+@inject blogic.Services.CartService CartService
+@rendermode InteractiveServer
 
 <PageTitle>Domů</PageTitle>
 
@@ -11,36 +13,53 @@
         <input class="search-input" placeholder="Hledat produkty..." />
         <button class="search-button">Hledat</button>
     </div>
-
-    <div class="product-grid">
-        @foreach (var product in Products)
-        {
-            <div class="product-card">
-                <img src="https://via.placeholder.com/150" alt="@product.Name" class="product-image" />
-                <h3>@product.Name</h3>
-                <p class="in-stock">Skladem</p>
-                <p class="price">@product.Price Kč</p>
-                <button class="buy-button" @onclick="() => AddToCart(product)">Koupit</button>
-            </div>
-        }
-    </div>
+    
+    @if (!string.IsNullOrEmpty(addedMessage))
+    {
+        <div class="alert alert-success">@addedMessage</div>
+    }
+    
+    @if (products == null)
+    {
+        <p>Načítám...</p>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var product in products)
+            {
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/150" alt="@product.Name" class="product-image" />
+                    <h3>@product.Name</h3>
+                    <p class="in-stock">Skladem</p>
+                    <p class="price">@product.Price Kč</p>
+                    <button class="buy-button" @onclick="() => AddToCart(product)">Koupit</button>
+                </div>
+            }
+        </div>
+    }
 </article>
 
 @code {
-    private List<Product> Products = new()
+    private List<Product>? products;
+    private string? addedMessage;
+    
+    protected override void OnInitialized()
     {
-        new Product("Birell", 5),
-        new Product("Anticol", 10),
-        new Product("Bohemia Chips", 10),
-        new Product("Pepsi 0.5l", 15),
-        new Product("7 Days Croissant", 10),
-    };
+        products = ProductService.GetAllProducts();
+    }
 
-    private List<Product> Cart = new();
+    private void AddToCart(Product product)
+    {
+        CartService.Add(product);
+        addedMessage = $"✅ Přidáno do košíku: {product.Name}";
 
-    void AddToCart(Product p) => Cart.Add(p);
-
-    void GoToCart() => Navigation.NavigateTo("/kosik");
-
-    public record Product(string Name, int Price);
+        // Reset zprávy po 3 vteřinách (volitelné)
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000);
+            addedMessage = null;
+            InvokeAsync(StateHasChanged); // Překreslení
+        });
+    }
 }

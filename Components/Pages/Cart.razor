@@ -1,4 +1,7 @@
 @page "/cart"
+@using blogic.Models
+@inject blogic.Services.CartService CartService
+@rendermode InteractiveServer
 
 <PageTitle>Košík</PageTitle>
 
@@ -40,11 +43,11 @@
 
         @if (!loggedIn)
         {
-            <button @onclick="Login" style="padding: 10px 20px; border: none; background-color: orange; color: white;">Přihlásit se pro pokračování</button>
+            <button style="padding: 10px 20px; border: none; background-color: orange; color: white;">Přihlásit se pro pokračování</button>
         }
         else
         {
-            <button @onclick="Checkout" style="padding: 10px 20px; border: none; background-color: green; color: white;">Odeslat objednávku</button>
+            <button style="padding: 10px 20px; border: none; background-color: green; color: white;">Odeslat objednávku</button>
         }
 
         <button style="margin-left: 20px; padding: 10px 20px; border: 1px solid red; color: red; background-color: transparent;">Export</button>
@@ -56,23 +59,14 @@
 </div>
 
 @code {
-    private List<Product> _cart = new()
-    {
-        new Product("Pepsi 0,5 l (mix)", 15)
-    };
-
     private int UserCredits = 420;
     private bool loggedIn = false;
     private string username = "admin@eshop.cz";
+    
+    private List<Product>? _cart;
 
-    void Login() => loggedIn = true;
-
-    void Checkout()
+    protected override void OnInitialized()
     {
-        UserCredits -= _cart.Sum(p => p.Price);
-        _cart.Clear();
-        Console.WriteLine("Objednávka odeslána");
+        _cart = CartService.GetCartProducts();
     }
-
-    public record Product(string Name, int Price);
 }
