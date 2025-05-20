@@ -5,7 +5,7 @@
 
 <PageTitle>Košík</PageTitle>
 
-<header style="background-image: url('https://images.unsplash.com/photo-1559561854-266fba0e52c6'); background-size: cover; background-position: center; height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold;">
+<header style="background-image: url('https://images.unsplash.com/photo-1559561854-266fba0e52c6'); background-size: cover; background-position: center; height: 200px; display: flex; align-items: center; justify-content: center; color: black; font-size: 2rem; font-weight: bold;">
     Moje objednávky
 </header>
 
@@ -20,10 +20,10 @@
         <table class="cart-table">
             <thead>
             <tr>
-                <th>Produkt</th>
-                <th>Cena za ks</th>
-                <th>Množství</th>
-                <th>Akce</th>
+                <th rowspan="2">Produkt</th>
+                <th colspan="2" style="text-align: center;">Cena</th>
+                <th rowspan="2">Množství</th>
+                <th rowspan="2">Akce</th>
             </tr>
             </thead>
             <tbody>
@@ -31,12 +31,13 @@
             {
                 <tr>
                     <td class="product-info">
-                        <img src="@item.ImageUrl" alt="@item.Name" class="cart-img" />
-                        <span>@item.Name</span>
+                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="cart-img" />
+                        <span>@item.Product.Name</span>
                     </td>
-                    <td>@item.Price Kč</td>
+                    <td>@item.Product.Price Kč / Ks</td>
+                    <td style="color: green;">@item.TotalPrice Kč</td>
                     <td>
-                        <input type="number" min="0" @bind="quantity" class="quantity-input" />
+                        <input type="number" min="1" @bind="item.Quantity" class="quantity-input" />
                     </td>
                     <td>
                         <button class="edit-button">Upravit</button>
@@ -46,10 +47,10 @@
             </tbody>
         </table>
 
-        <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Price) Kč</p>
+
+        <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Product.Price * p.Quantity) Kč</p>
 
         <button class="export-button">Export</button>
-
     }
     else
     {
@@ -58,11 +59,10 @@
 </div>
 
 @code {
-    private List<Product>? _cart;
+    private List<CartItem> _cart = new();
 
     protected override void OnInitialized()
     {
-        _cart = CartService.GetCartProducts();
+        _cart = CartService.GetCartItems();
     }
-    private int quantity = 0;
 }

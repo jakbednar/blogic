@@ -36,7 +36,7 @@
                 <div class="product-card">
                     <img src="@product.ImageUrl" alt="@product.Name" class="product-image" />
                     <h3>@product.Name</h3>
-                    <p class="in-stock">Skladem</p>
+                    <p class="in-stock">Skladem @product.Quantity ks</p>
                     <p class="price">@product.Price Kč</p>
                     <button class="buy-button" @onclick="() => AddToCart(product)">Koupit</button>
                 </div>
