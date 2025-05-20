@@ -1,4 +1,5 @@
 using blogic.Components;
+using blogic.Services;
 
 namespace blogic;
 
@@ -7,6 +8,9 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        
+        builder.Services.AddScoped<ProductService>();
+        builder.Services.AddScoped<CartService>();
 
         // Add services to the container.
         builder.Services.AddRazorComponents()
