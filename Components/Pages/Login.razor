@@ -1,0 +1,93 @@
+@page "/login"
+@rendermode InteractiveServer
+@using Dapper
+@using blogic.Data
+@inject NavigationManager Navigation
+@using blogic.Models
+
+<h1>@(_showRegister ? "Registrace" : "Přihlášení")</h1>
+
+@if (!_showRegister)
+{
+    <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin">
+        <InputText class="form-control" @bind-Value="_loginModel.Email" placeholder="Email" />
+        <InputText class="form-control" @bind-Value="_loginModel.Password" placeholder="Heslo" type="password" />
+        <button class="btn btn-primary" type="submit">Přihlásit se</button>
+        <button class="btn btn-link" type="button" @onclick="() => _showRegister = true">Registrovat</button>
+    </EditForm>
+}
+else
+{
+    <EditForm Model="@_registerModel" OnValidSubmit="HandleRegister">
+        <InputText class="form-control" @bind-Value="_registerModel.Name" placeholder="Jméno" />
+        <InputText class="form-control" @bind-Value="_registerModel.Email" placeholder="Email" />
+        <InputText class="form-control" @bind-Value="_registerModel.Phone" placeholder="Telefon" />
+        <InputText class="form-control" @bind-Value="_registerModel.Password" placeholder="Heslo" type="password" />
+        <InputText class="form-control" @bind-Value="_registerModel.ConfirmPassword" placeholder="Heslo znovu" type="password" />
+        <button class="btn btn-success" type="submit">Registrovat</button>
+        <button class="btn btn-link" type="button" @onclick="() => _showRegister = false">Zpět</button>
+    </EditForm>
+}
+
+@code {
+    private bool _showRegister = false;
+    private LoginModel _loginModel = new();
+    private RegisterModel _registerModel = new();
+
+    private void HandleLogin()
+    {
+        try
+        {
+            using var db = Database.Get();
+            var user = db.QueryFirstOrDefault<User>(
+                "SELECT * FROM Users WHERE Email = @Email AND Password = @Password", _loginModel);
+
+            if (user != null)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                // TODO: Add message to UI
+            }
+        }
+        catch (Exception ex)
+        {
+            // TODO: Add error message to UI
+        }
+    }
+
+    private void HandleRegister()
+    {
+        if (_registerModel.Password != _registerModel.ConfirmPassword)
+            return;
+
+        using var db = Database.Get();
+        var existing = db.QueryFirstOrDefault<User>(
+            "SELECT * FROM Users WHERE Email = @Email", new { _registerModel.Email });
+
+        if (existing != null)
+            return;
+
+        db.Execute(@"
+            INSERT INTO Users (Name, Email, Phone, Password, Role)
+            VALUES (@Name, @Email, @Phone, @Password, 'User');", _registerModel);
+
+        _showRegister = false;
+    }
+
+    public class LoginModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    public class RegisterModel
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string ConfirmPassword { get; set; } = "";
+    }
+}
