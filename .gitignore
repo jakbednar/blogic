@@ -33,3 +33,5 @@ appsettings.Development.json
 appsettings.Production.json
 # pokud chceš verzovat base:
 !appsettings.json
+
+*.db
