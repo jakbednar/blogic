@@ -1,0 +1,150 @@
+@page "/add"
+@using blogic.Models
+@using blogic.Services
+@rendermode InteractiveServer
+@inject ProductService ProductService
+
+<PageTitle>Správa produktů</PageTitle>
+
+<header style="background-image: url('https://images.unsplash.com/photo-1559561854-266fba0e52c6'); background-size: cover; background-position: center; height: 200px; display: flex; align-items: center; justify-content: center; color: black; font-size: 2rem; font-weight: bold;">
+    Správa produktů
+</header>
+
+<div style="padding: 30px; max-width: 900px; margin: auto;">
+
+    <h3>Přidat nový produkt</h3>
+    <div class="form-row">
+        <input placeholder="Název produktu" @bind="newName"/>
+        <input placeholder="Cena (Kč)" type="number" @bind="newPrice"/>
+        <input placeholder="Množství" type="number" @bind="newQuantity"/>
+        <input placeholder="URL obrázku" @bind="newImageUrl"/>
+        <button class="add-button" @onclick="AddProduct">Přidat</button>
+    </div>
+
+    <table class="cart-table">
+        <thead>
+        <tr>
+            <th>Produkt</th>
+            <th>Cena</th>
+            <th>Množství</th>
+            <th>Akce</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        @foreach (var item in products)
+        {
+            <tr>
+                <td class="product-info">
+                    <img src="@item.ImageUrl" alt="@item.Name" class="cart-img" />
+                    @if (editingProductId == item.ProductID)
+                    {
+                        <input type="text" @bind="item.Name" />
+                    }
+                    else
+                    {
+                        <span>@item.Name</span>
+                    }
+                </td>
+                <td>
+                    @if (editingProductId == item.ProductID)
+                    {
+                        <input type="number" @bind="item.Price" />
+                    }
+                    else
+                    {
+                        @($"{item.Price} Kč")
+                    }
+                </td>
+                <td>
+                    @if (editingProductId == item.ProductID)
+                    {
+                        <input type="number" @bind="item.Quantity" />
+                    }
+                    else
+                    {
+                        @($"{item.Quantity} ks")
+                    }
+                </td>
+                <td>
+                    @if (editingProductId == item.ProductID)
+                    {
+                        <button class="action-button confirm-button" @onclick="() => ConfirmEdit(item.ProductID)">✅</button>
+                    }
+                    else
+                    {
+                        <button class="action-button edit-button" @onclick="() => EditProduct(item.ProductID)" title="Upravit">✏️</button>
+                    }
+                    <button class="action-button delete-button" @onclick="() => RemoveProduct(item.ProductID)" title="Odstranit">❌</button>
+                </td>
+            </tr>
+        }
+
+        </tbody>
+    </table>
+    </div>
+
+
+@code {
+    private List<Product> products = new();
+    private Product newProduct = new();
+
+    private string newName;
+    private int newPrice;
+    private int newQuantity;
+    private string newImageUrl;
+    
+    private int? editingProductId = null;
+
+    protected override void OnInitialized()
+    {
+        products = ProductService.GetAllProducts();
+    }
+
+    private void AddProduct()
+    {
+        if (string.IsNullOrWhiteSpace(newName) || newPrice <= 0 || newQuantity <= 0)
+            return;
+
+        var newProduct = new Product
+        {
+            ProductID = ProductService.NextId(),
+            Name = newName,
+            Price = newPrice,
+            Quantity = newQuantity,
+            ImageUrl = string.IsNullOrWhiteSpace(newImageUrl)
+                ? "https://via.placeholder.com/50"
+                : newImageUrl,
+            DateCreated = DateTime.UtcNow,
+            CreatedBy = 1,
+            IsDeleted = false
+        };
+
+        products.Add(newProduct);
+
+        newName = string.Empty;
+        newPrice = 0;
+        newQuantity = 0;
+        newImageUrl = string.Empty;
+    }
+
+    private void RemoveProduct(int productId)
+    {
+        var productToRemove = products.FirstOrDefault(p => p.ProductID == productId);
+        if (productToRemove != null)
+        {
+            products.Remove(productToRemove);
+        }
+    }
+    
+    private void EditProduct(int productId)
+    {
+        editingProductId = productId;
+    }
+
+    private void ConfirmEdit(int productId)
+    {
+        editingProductId = null;
+    }
+
+}

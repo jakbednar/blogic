@@ -10,10 +10,6 @@
 </header>
 
 <div style="padding: 30px; max-width: 900px; margin: auto;">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-        <label>Od <input type="date" value="2022-02-03" style="padding: 8px;" /></label>
-        <label>Do <input type="date" value="2022-05-09" style="padding: 8px;" /></label>
-    </div>
 
     @if (_cart.Any())
     {
@@ -70,7 +66,7 @@
 
     private void RemoveItem(int productId)
     {
-        CartService.Remove(productId);        // ✅ používáme správnou metodu
-        _cart = CartService.GetCartItems();   // aktualizace z paměti
+        CartService.Remove(productId);
+        _cart = CartService.GetCartItems();
     }
 }

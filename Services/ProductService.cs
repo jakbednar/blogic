@@ -4,6 +4,14 @@ namespace blogic.Services;
 
 public class ProductService
 {
+    public int NextId()
+    {
+        if (_products.Count == 0)
+            return 1;
+
+        return _products.Max(p => p.ProductID) + 1;
+    }
+    
     public List<Product> GetAllProducts() => _products;
     
     private readonly List<Product> _products = new()
