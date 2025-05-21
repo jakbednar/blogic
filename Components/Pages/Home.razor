@@ -19,8 +19,8 @@
     <h1 class="headline">Co si dnes dáš?</h1>
 
     <div class="search-wrapper">
-        <input class="search-input" placeholder="Hledat produkty..." />
-        <button class="search-button">Hledat</button>
+        <input class="search-input" placeholder="Hledat produkty..." @bind="searchTerm" @bind:event="oninput" @onkeydown="HandleKeyDown"/>
+        <button class="search-button" @onclick="Search">Hledat</button>
     </div>
 
     @if (products == null)
@@ -60,12 +60,15 @@
 </article>
 
 @code {
+    private List<Product> allProducts = new();
+    private string searchTerm = string.Empty;
     private List<Product>? products;
     private List<string> toastMessages = new();
 
     protected override void OnInitialized()
     {
-        products = ProductService.GetAllProducts();
+        allProducts = ProductService.GetAllProducts();
+        products = new List<Product>(allProducts);
     }
 
     private void AddToCart(Product product)
@@ -82,5 +85,27 @@
             toastMessages.Remove(message);
             await InvokeAsync(StateHasChanged);
         });
+    }
+
+    private void Search()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            products = new List<Product>(allProducts);
+        }
+        else
+        {
+            products = allProducts
+                .Where(p => p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+    
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Search();
+        }
     }
 }
