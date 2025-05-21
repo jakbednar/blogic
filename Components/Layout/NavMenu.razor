@@ -5,20 +5,20 @@
 @implements IDisposable
 @rendermode InteractiveServer
 
-<header class="top-navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: orange; color: white;">
+<header class="top-navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: black; color: white;">
     <NavLink class="brand" href="/" style="font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white;">
-        DUTY<span style="color: white;">FREE</span>
+        DUTY<span style="color: orange;">FREE</span>
     </NavLink>
 
     <div class="navbar-actions" style="display: flex; gap: 10px;">
-        <NavLink class="btn" style="background-color: black; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
+        <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
             🛒 Košík (@CartService.GetCartCount())
         </NavLink>
 
         @if (Session.IsLoggedIn)
         {
             <div class="user-dropdown" style="position: relative;">
-                <button class="btn" @onclick="ToggleDropdown" style="background-color: black; color: white; padding: 8px 16px; border-radius: 20px;">
+                <button class="btn" @onclick="ToggleDropdown" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;">
                     👤 @Session.CurrentUser?.Name
                 </button>
 
@@ -35,7 +35,7 @@
         }
         else
         {
-            <NavLink class="btn" style="background-color: black; color: white; padding: 8px 16px; border-radius: 20px;" href="/login">
+            <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/login">
                 🔐 Přihlášení
             </NavLink>
         }
