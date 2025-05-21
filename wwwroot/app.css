@@ -430,9 +430,9 @@ input[type=number] {
 .action-button {
     background-color: transparent;
     border: none;
-    font-size: 15px;
+    font-size: 20px;
     cursor: pointer;
-    padding: 4px;
+    padding: 10px;
     transition: transform 0.15s ease, color 0.15s ease;
     border-radius: 6px;
 }
@@ -440,10 +440,10 @@ input[type=number] {
 .confirm-button {
     background-color: transparent;
     border: none;
-    font-size: 15px;
+    font-size: 20px;
     color: green;
     cursor: pointer;
-    padding: 4px;
+    padding: 10px;
     transition: transform 0.15s ease, color 0.15s ease;
     border-radius: 6px;
 }
@@ -456,10 +456,10 @@ input[type=number] {
 .edit-button {
     background-color: transparent;
     border: none;
-    font-size: 15px;
+    font-size: 20px;
     color: #007bff;
     cursor: pointer;
-    padding: 4px;
+    padding: 10px;
     transition: transform 0.15s ease, color 0.15s ease;
     border-radius: 6px;
 }

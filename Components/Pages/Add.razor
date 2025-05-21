@@ -24,6 +24,7 @@
     <table class="cart-table">
         <thead>
         <tr>
+            <th>ID</th>
             <th>Produkt</th>
             <th>Cena</th>
             <th>Množství</th>
@@ -35,11 +36,14 @@
         @foreach (var item in products)
         {
             <tr>
+                <td>
+                    @($"{item.ProductID}")
+                </td>
                 <td class="product-info">
-                    <img src="@item.ImageUrl" alt="@item.Name" class="cart-img" />
+                    <img src="@item.ImageUrl" alt="@item.Name" class="cart-img"/>
                     @if (editingProductId == item.ProductID)
                     {
-                        <input type="text" @bind="item.Name" />
+                        <input type="text" @bind="editModel.Name"/>
                     }
                     else
                     {
@@ -49,7 +53,7 @@
                 <td>
                     @if (editingProductId == item.ProductID)
                     {
-                        <input type="number" @bind="item.Price" />
+                        <input type="number" @bind="editModel.Price" class="small-input"/>
                     }
                     else
                     {
@@ -59,7 +63,7 @@
                 <td>
                     @if (editingProductId == item.ProductID)
                     {
-                        <input type="number" @bind="item.Quantity" />
+                        <input type="number" @bind="editModel.Quantity" class="small-input"/>
                     }
                     else
                     {
@@ -95,6 +99,8 @@
     private string newImageUrl;
     
     private int? editingProductId = null;
+    private Product editModel = new();
+
 
     protected override void OnInitialized()
     {
@@ -139,12 +145,36 @@
     
     private void EditProduct(int productId)
     {
-        editingProductId = productId;
+        var product = products.FirstOrDefault(p => p.ProductID == productId);
+        if (product != null)
+        {
+            editingProductId = productId;
+
+            editModel = new Product
+            {
+                ProductID = product.ProductID,
+                Name = product.Name,
+                Price = product.Price,
+                Quantity = product.Quantity,
+                ImageUrl = product.ImageUrl
+            };
+        }
     }
 
     private void ConfirmEdit(int productId)
     {
+        var product = products.FirstOrDefault(p => p.ProductID == productId);
+        if (product != null)
+        {
+            product.Name = editModel.Name;
+            product.Price = editModel.Price;
+            product.Quantity = editModel.Quantity;
+            product.ImageUrl = editModel.ImageUrl;
+        }
+
         editingProductId = null;
+        editModel = new Product();
     }
+
 
 }

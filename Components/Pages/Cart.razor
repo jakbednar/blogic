@@ -36,7 +36,7 @@
                         <input type="number" min="1" @bind="item.Quantity" class="quantity-input" />
                     </td>
                     <td>
-                        <button class="delete-button" @onclick="() => RemoveItem(item.Product.ProductID)" title="Odstranit položku">
+                        <button class="action-button delete-button" @onclick="() => RemoveItem(item.Product.ProductID)" title="Odstranit položku">
                             ❌
                         </button>
                     </td>
@@ -48,7 +48,7 @@
 
         <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Product.Price * p.Quantity) Kč</p>
 
-        <button class="export-button">Export</button>
+        <button class="export-button">Objednat</button>
     }
     else
     {

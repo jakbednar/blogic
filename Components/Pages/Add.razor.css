@@ -75,19 +75,12 @@
     margin-top: 20px;
 }
 
-.save-all-button {
-    margin-top: 20px;
-    padding: 12px 24px;
-    font-size: 1rem;
-    background-color: green;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: block;
-    width: 100%;
+.small-input {
+    width: 60px;
+    padding: 4px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
 }
 
-.save-all-button:hover {
-    background-color: darkgreen;
-}
