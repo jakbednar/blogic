@@ -1,6 +1,7 @@
 using System.Data;
 using Dapper;
 using Microsoft.Data.Sqlite;
+using BCrypt.Net;
 
 namespace blogic.Data;
 
@@ -47,10 +48,18 @@ public static class Database
         var existing = db.QueryFirstOrDefault("SELECT * FROM Users WHERE Email = @Email", new { Email = "admin@test.cz" });
         if (existing == null)
         {
+            var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123");
+
             db.Execute("""
                 INSERT INTO Users (Name, Email, Password, Role)
-                VALUES ('Admin', 'admin@test.cz', 'admin123', 'Admin');
-            """);
+                VALUES (@Name, @Email, @Password, @Role);
+            """, new
+            {
+                Name = "Admin",
+                Email = "admin@test.cz",
+                Password = adminPasswordHash,
+                Role = "Admin"
+            });
         }
 
         db.Execute("""

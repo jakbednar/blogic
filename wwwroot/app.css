@@ -484,3 +484,38 @@ delete-button {
     transform: scale(1.2);
     color: darkred;
 }
+.delete-button {
+    background-color: transparent;
+    border: none;
+    font-size: 15px;
+    color: red;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.15s ease, color 0.15s ease;
+    border-radius: 6px;
+}
+
+.delete-button:hover {
+    transform: scale(1.2);
+    color: darkred;
+}
+
+
+.dropdown-menu {
+    background-color: white;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    min-width: 180px;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 8px;
+    color: black;
+    text-decoration: none;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
