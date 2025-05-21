@@ -1,0 +1,22 @@
+@page "/orders"
+@inject blogic.Services.UserSessionService Session
+
+<h2>🧾 Moje objednávky</h2>
+
+@if (!Session.IsLoggedIn)
+{
+    <div class="alert alert-warning mt-3">Pro zobrazení objednávek se musíš přihlásit.</div>
+}
+else
+{
+    <p>Vítej, <strong>@Session.CurrentUser?.Name</strong>!</p>
+
+    <h5 class="mt-4">Tady budou tvoje objednávky:</h5>
+
+    <!-- Zatím jen ukázkový obsah -->
+    <ul class="list-group mt-2">
+        <li class="list-group-item">📦 Objednávka č. 100001 – 2x produkt A – 21. 5. 2025</li>
+        <li class="list-group-item">📦 Objednávka č. 100002 – 1x produkt B – 18. 5. 2025</li>
+        <li class="list-group-item text-muted">… objednávky se budou načítat z databáze</li>
+    </ul>
+}

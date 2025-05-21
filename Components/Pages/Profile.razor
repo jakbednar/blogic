@@ -1,0 +1,98 @@
+@page "/profile"
+@inject blogic.Services.UserSessionService Session
+@using Dapper
+@using blogic.Data
+@using System.ComponentModel.DataAnnotations
+
+<h2>🛠 Můj profil</h2>
+
+@if (!Session.IsLoggedIn)
+{
+    <div class="alert alert-warning">Pro zobrazení profilu se musíš přihlásit.</div>
+}
+else
+{
+    <EditForm Model="@_model" OnValidSubmit="SaveChanges">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Jméno</label>
+            <InputText class="form-control" @bind-Value="_model.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label>Email</label>
+            <InputText class="form-control" @bind-Value="_model.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label>Telefon</label>
+            <InputText class="form-control" @bind-Value="_model.Phone" />
+        </div>
+
+        <hr />
+        <div class="mb-3">
+            <label>Nové heslo <span class="text-muted">(nepovinné)</span></label>
+            <InputText type="password" class="form-control" @bind-Value="_model.NewPassword" />
+        </div>
+
+        <button class="btn btn-success">💾 Uložit změny</button>
+    </EditForm>
+
+    @if (!string.IsNullOrWhiteSpace(_message))
+    {
+        <div class="mt-3 alert alert-info">@_message</div>
+    }
+}
+
+@code {
+    private ProfileModel _model = new();
+    private string _message = "";
+
+    protected override void OnInitialized()
+    {
+        if (Session.CurrentUser != null)
+        {
+            _model = new ProfileModel
+            {
+                Name = Session.CurrentUser.Name,
+                Email = Session.CurrentUser.Email,
+                Phone = Session.CurrentUser.Phone ?? ""
+            };
+        }
+    }
+
+    private void SaveChanges()
+    {
+        using var db = Database.Get();
+        string? passwordHash = null;
+
+        if (!string.IsNullOrWhiteSpace(_model.NewPassword))
+        {
+            passwordHash = BCrypt.Net.BCrypt.HashPassword(_model.NewPassword);
+        }
+
+        db.Execute("UPDATE Users SET Name=@Name, Email=@Email, Phone=@Phone"
+                 + (passwordHash != null ? ", PasswordHash=@PasswordHash" : "")
+                 + " WHERE UserId=@UserId",
+            new
+            {
+                _model.Name,
+                _model.Email,
+                _model.Phone,
+                PasswordHash = passwordHash,
+                Session.CurrentUser!.UserId
+            });
+
+        _message = "Změny byly úspěšně uloženy.";
+    }
+
+    private class ProfileModel
+    {
+        [Required] public string Name { get; set; } = "";
+        [Required] public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string NewPassword { get; set; } = "";
+    }
+}

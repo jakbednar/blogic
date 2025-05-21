@@ -15,6 +15,7 @@ public class Program
 
         builder.Services.AddScoped<ProductService>();
         builder.Services.AddScoped<CartService>();
+        builder.Services.AddScoped<UserSessionService>();
 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();

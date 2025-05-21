@@ -1,0 +1,36 @@
+@page "/credits"
+@inject blogic.Services.UserSessionService Session
+
+<h2>💳 Dobití kreditu</h2>
+
+@if (!Session.IsLoggedIn)
+{
+    <div class="alert alert-warning mt-3">Pro dobití kreditu se musíš přihlásit.</div>
+}
+else
+{
+    <p>Vyber částku, kterou chceš dobít:</p>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-primary" @onclick="() => SelectAmount(100)">+100 Kč</button>
+        <button class="btn btn-outline-primary" @onclick="() => SelectAmount(200)">+200 Kč</button>
+        <button class="btn btn-outline-primary" @onclick="() => SelectAmount(500)">+500 Kč</button>
+    </div>
+
+    @if (_selectedAmount > 0)
+    {
+        <div class="mt-4">
+            <p>💰 Vybral jsi: <strong>@_selectedAmount Kč</strong></p>
+            <button class="btn btn-success">➡️ Pokračovat na platbu</button>
+        </div>
+    }
+}
+
+@code {
+    private int _selectedAmount = 0;
+
+    private void SelectAmount(int amount)
+    {
+        _selectedAmount = amount;
+    }
+}
