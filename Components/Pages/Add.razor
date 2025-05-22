@@ -1,7 +1,8 @@
 @page "/add"
+@rendermode InteractiveServer
 @using blogic.Models
 @using blogic.Services
-@rendermode InteractiveServer
+@inject UserSessionService Session
 @inject ProductService ProductService
 
 <PageTitle>Správa produktů</PageTitle>
@@ -11,146 +12,149 @@
 </header>
 
 <div style="padding: 30px; max-width: 900px; margin: auto;">
+    @if (!Session.IsLoggedIn || !Session.IsAdmin)
+    {
+        <div class="alert alert-danger text-center mt-5">
+            Přístup pouze pro administrátory.<br />
+            <a href="/login">Přihlaste se</a> nebo se vraťte na <a href="/">domovskou stránku</a>.
+        </div>
+    }
+    else
+    {
+        <h3>Přidat nový produkt</h3>
+        <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input placeholder="Název produktu" @bind="_newName" />
+            <input placeholder="Cena (Kč)" type="number" @bind="_newPrice" />
+            <input placeholder="Množství" type="number" @bind="_newQuantity" />
+            <input placeholder="URL obrázku" @bind="_newImageUrl" />
+            <button class="add-button" @onclick="AddProduct">Přidat</button>
+        </div>
 
-    <h3>Přidat nový produkt</h3>
-    <div class="form-row">
-        <input placeholder="Název produktu" @bind="newName"/>
-        <input placeholder="Cena (Kč)" type="number" @bind="newPrice"/>
-        <input placeholder="Množství" type="number" @bind="newQuantity"/>
-        <input placeholder="URL obrázku" @bind="newImageUrl"/>
-        <button class="add-button" @onclick="AddProduct">Přidat</button>
-    </div>
-
-    <table class="cart-table">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Produkt</th>
-            <th>Cena</th>
-            <th>Množství</th>
-            <th>Akce</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        @foreach (var item in products)
-        {
-            <tr>
-                <td>
-                    @($"{item.ProductID}")
-                </td>
-                <td class="product-info">
-                    <img src="@item.ImageUrl" alt="@item.Name" class="cart-img"/>
-                    @if (editingProductId == item.ProductID)
-                    {
-                        <input type="text" @bind="editModel.Name"/>
-                    }
-                    else
-                    {
-                        <span>@item.Name</span>
-                    }
-                </td>
-                <td>
-                    @if (editingProductId == item.ProductID)
-                    {
-                        <input type="number" @bind="editModel.Price" class="small-input"/>
-                    }
-                    else
-                    {
-                        @($"{item.Price} Kč")
-                    }
-                </td>
-                <td>
-                    @if (editingProductId == item.ProductID)
-                    {
-                        <input type="number" @bind="editModel.Quantity" class="small-input"/>
-                    }
-                    else
-                    {
-                        @($"{item.Quantity} ks")
-                    }
-                </td>
-                <td>
-                    @if (editingProductId == item.ProductID)
-                    {
-                        <button class="action-button confirm-button" @onclick="() => ConfirmEdit(item.ProductID)">✅</button>
-                    }
-                    else
-                    {
-                        <button class="action-button edit-button" @onclick="() => EditProduct(item.ProductID)" title="Upravit">✏️</button>
-                    }
-                    <button class="action-button delete-button" @onclick="() => RemoveProduct(item.ProductID)" title="Odstranit">❌</button>
-                </td>
-            </tr>
-        }
-
-        </tbody>
-    </table>
-    </div>
-
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Produkt</th>
+                    <th>Cena</th>
+                    <th>Množství</th>
+                    <th>Akce</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _products)
+                {
+                    <tr>
+                        <td>@item.ProductID</td>
+                        <td class="product-info">
+                            <img src="@item.ImageUrl" alt="@item.Name" class="cart-img" />
+                            @if (_editingProductId == item.ProductID)
+                            {
+                                <input type="text" @bind="_editModel.Name" />
+                            }
+                            else
+                            {
+                                <span>@item.Name</span>
+                            }
+                        </td>
+                        <td>
+                            @if (_editingProductId == item.ProductID)
+                            {
+                                <input type="number" @bind="_editModel.Price" class="small-input" />
+                            }
+                            else
+                            {
+                                @($"{item.Price} Kč")
+                            }
+                        </td>
+                        <td>
+                            @if (_editingProductId == item.ProductID)
+                            {
+                                <input type="number" @bind="_editModel.Quantity" class="small-input" />
+                            }
+                            else
+                            {
+                                @($"{item.Quantity} ks")
+                            }
+                        </td>
+                        <td>
+                            @if (_editingProductId == item.ProductID)
+                            {
+                                <button class="action-button confirm-button" @onclick="() => ConfirmEdit(item.ProductID)">✅</button>
+                            }
+                            else
+                            {
+                                <button class="action-button edit-button" @onclick="() => EditProduct(item.ProductID)" title="Upravit">✏️</button>
+                            }
+                            <button class="action-button delete-button" @onclick="() => RemoveProduct(item.ProductID)" title="Odstranit">❌</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 
 @code {
-    private List<Product> products = new();
-    private Product newProduct = new();
+    private List<Product> _products = new();
+    private string _newName = string.Empty;
+    private int _newPrice;
+    private int _newQuantity;
+    private string _newImageUrl = string.Empty;
 
-    private string newName;
-    private int newPrice;
-    private int newQuantity;
-    private string newImageUrl;
-    
-    private int? editingProductId = null;
-    private Product editModel = new();
+    private int? _editingProductId;
+    private Product _editModel = new();
 
-
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        products = ProductService.GetAllProducts();
+        _products = await ProductService.GetAllProductsAsync();
     }
 
-    private void AddProduct()
+    private async Task AddProduct()
     {
-        if (string.IsNullOrWhiteSpace(newName) || newPrice <= 0 || newQuantity <= 0)
+        if (string.IsNullOrWhiteSpace(_newName) || _newPrice <= 0 || _newQuantity <= 0)
             return;
 
         var newProduct = new Product
         {
             ProductID = ProductService.NextId(),
-            Name = newName,
-            Price = newPrice,
-            Quantity = newQuantity,
-            ImageUrl = string.IsNullOrWhiteSpace(newImageUrl)
+            Name = _newName,
+            Price = _newPrice,
+            Quantity = _newQuantity,
+            ImageUrl = string.IsNullOrWhiteSpace(_newImageUrl)
                 ? "https://via.placeholder.com/50"
-                : newImageUrl,
+                : _newImageUrl,
             DateCreated = DateTime.UtcNow,
-            CreatedBy = 1,
+            CreatedBy = Session.CurrentUser?.UserId ?? 1,
             IsDeleted = false
         };
 
-        products.Add(newProduct);
+        ProductService.AddProduct(newProduct);
+        _products.Add(newProduct);
 
-        newName = string.Empty;
-        newPrice = 0;
-        newQuantity = 0;
-        newImageUrl = string.Empty;
+        _newName = string.Empty;
+        _newPrice = 0;
+        _newQuantity = 0;
+        _newImageUrl = string.Empty;
     }
 
     private void RemoveProduct(int productId)
     {
-        var productToRemove = products.FirstOrDefault(p => p.ProductID == productId);
+        ProductService.RemoveProduct(productId);
+        var productToRemove = _products.FirstOrDefault(p => p.ProductID == productId);
         if (productToRemove != null)
         {
-            products.Remove(productToRemove);
+            _products.Remove(productToRemove);
         }
     }
-    
+
     private void EditProduct(int productId)
     {
-        var product = products.FirstOrDefault(p => p.ProductID == productId);
+        var product = _products.FirstOrDefault(p => p.ProductID == productId);
         if (product != null)
         {
-            editingProductId = productId;
+            _editingProductId = productId;
 
-            editModel = new Product
+            _editModel = new Product
             {
                 ProductID = product.ProductID,
                 Name = product.Name,
@@ -163,18 +167,18 @@
 
     private void ConfirmEdit(int productId)
     {
-        var product = products.FirstOrDefault(p => p.ProductID == productId);
+        var product = _products.FirstOrDefault(p => p.ProductID == productId);
         if (product != null)
         {
-            product.Name = editModel.Name;
-            product.Price = editModel.Price;
-            product.Quantity = editModel.Quantity;
-            product.ImageUrl = editModel.ImageUrl;
+            product.Name = _editModel.Name;
+            product.Price = _editModel.Price;
+            product.Quantity = _editModel.Quantity;
+            product.ImageUrl = _editModel.ImageUrl;
+
+            ProductService.UpdateProduct(product);
         }
 
-        editingProductId = null;
-        editModel = new Product();
+        _editingProductId = null;
+        _editModel = new Product();
     }
-
-
 }

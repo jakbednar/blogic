@@ -17,20 +17,16 @@
 
         @if (Session.IsLoggedIn)
         {
-            <div class="user-dropdown" style="position: relative;">
-                <button class="btn" @onclick="ToggleDropdown" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;">
+            <div class="user-dropdown-hover">
+                <div class="user-trigger">
                     👤 @Session.CurrentUser?.Name
-                </button>
-
-                @if (_showDropdown)
-                {
-                    <ul class="dropdown-menu" style="position: absolute; right: 0; background: white; color: black; list-style: none; padding: 0; margin: 0; border-radius: 6px; width: 180px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 1000;">
-                        <li><NavLink class="dropdown-item" href="/orders" style="display: block; padding: 10px;">🧾 Objednávky</NavLink></li>
-                        <li><NavLink class="dropdown-item" href="/profile" style="display: block; padding: 10px;">🛠 Upravit profil</NavLink></li>
-                        <li><NavLink class="dropdown-item" href="/credits" style="display: block; padding: 10px;">💳 Dobít kredity</NavLink></li>
-                        <li><a href="#" class="dropdown-item" style="display: block; padding: 10px;" @onclick="Logout">🚪 Odhlásit se</a></li>
-                    </ul>
-                }
+                </div>
+                <ul class="dropdown-menu">
+                    <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
+                    <li><NavLink class="dropdown-item" href="/profile">🛠 Upravit profil</NavLink></li>
+                    <li><NavLink class="dropdown-item" href="/credits">💳 Dobít kredity</NavLink></li>
+                    <li><a href="#" class="dropdown-item" @onclick="Logout">🚪 Odhlásit se</a></li>
+                </ul>
             </div>
         }
         else
