@@ -2,7 +2,6 @@ using System.Data;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using BCrypt.Net;
-
 namespace blogic.Data;
 
 public static class Database
@@ -31,6 +30,7 @@ public static class Database
                 Price INTEGER NOT NULL,
                 Quantity INTEGER NOT NULL,
                 ImageUrl TEXT,
+                ImageFile BLOB,
                 IsDeleted INTEGER DEFAULT 0,
                 DateCreated TEXT DEFAULT (datetime('now')),
                 CreatedBy INTEGER NOT NULL DEFAULT 1,
@@ -51,6 +51,7 @@ public static class Database
         if (existing == null)
         {
             var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123");
+            var userPasswordHash = BCrypt.Net.BCrypt.HashPassword("user123");
 
             db.Execute("""
                 INSERT INTO Users (Name, Email, Password, Role)
@@ -62,6 +63,17 @@ public static class Database
                 Password = adminPasswordHash,
                 Role = "Admin"
             });
+
+            db.Execute("""
+                INSERT INTO Users (Name, Email, Password, Role)
+                VALUES (@Name, @Email, @Password, @Role);
+            """, new
+            {
+                Name = "Testovací uživatel",
+                Email = "user@test.cz",
+                Password = userPasswordHash,
+                Role = "User"
+            });
         }
 
         db.Execute("""
@@ -72,4 +84,4 @@ public static class Database
             ('7 Days Croissant', 10, 100, 1);
         """);
     }
-}
+} 

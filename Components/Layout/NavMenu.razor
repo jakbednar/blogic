@@ -25,6 +25,12 @@
                     <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
                     <li><NavLink class="dropdown-item" href="/profile">🛠 Upravit profil</NavLink></li>
                     <li><NavLink class="dropdown-item" href="/credits">💳 Dobít kredity</NavLink></li>
+
+                    @if (Session.IsAdmin)
+                    {
+                        <li><NavLink class="dropdown-item" href="/add">➕ Přidej produkt</NavLink></li>
+                    }
+
                     <li><a href="#" class="dropdown-item" @onclick="Logout">🚪 Odhlásit se</a></li>
                 </ul>
             </div>
