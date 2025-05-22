@@ -6,41 +6,56 @@
 @using blogic.Services
 @inject NavigationManager Navigation
 @inject UserSessionService Session
-@using System.ComponentModel.DataAnnotations;
+@using System.ComponentModel.DataAnnotations
 
 <h1>@(_showRegister ? "Registrace" : "Přihlášení")</h1>
 
 @if (!_showRegister)
 {
-    <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin">
+    <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <InputText class="form-control" @bind-Value="_loginModel.Email" placeholder="Email" />
-        <InputText class="form-control" @bind-Value="_loginModel.Password" placeholder="Heslo" type="password" />
+        <ValidationMessage For="@(() => _loginModel.Email)" />
 
-        <button class="btn btn-primary" type="submit">Přihlásit se</button>
+        <InputText class="form-control" @bind-Value="_loginModel.Password" placeholder="Heslo" type="password" />
+        <ValidationMessage For="@(() => _loginModel.Password)" />
+
+        <button class="btn btn-primary mt-2" type="submit">Přihlásit se</button>
         <button class="btn btn-link" type="button" @onclick="() => _showRegister = true">Registrovat</button>
     </EditForm>
 }
 else
 {
-    <EditForm Model="@_registerModel" OnValidSubmit="HandleRegister">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <EditForm Model="@_registerModel" OnValidSubmit="@HandleRegister">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
 
-        <InputText class="form-control" @bind-Value="_registerModel.Name" placeholder="Jméno" />
-        <InputText class="form-control" @bind-Value="_registerModel.Email" placeholder="Email" />
-        <InputText class="form-control" @bind-Value="_registerModel.Phone" placeholder="Telefon" />
-        <InputText class="form-control" @bind-Value="_registerModel.Password" placeholder="Heslo" type="password" />
-        <InputText class="form-control" @bind-Value="_registerModel.ConfirmPassword" placeholder="Heslo znovu" type="password" />
+        <InputText class="form-control" @bind-Value="_registerModel.Name" placeholder="Jméno"/>
+        <ValidationMessage For="@(() => _registerModel.Name)"/>
 
-        <button class="btn btn-success" type="submit">Registrovat</button>
+        <InputText class="form-control" @bind-Value="_registerModel.Email" placeholder="Email"/>
+        <ValidationMessage For="@(() => _registerModel.Email)"/>
+
+        <InputText class="form-control" @bind-Value="_registerModel.Phone" placeholder="Telefon"/>
+        <ValidationMessage For="@(() => _registerModel.Phone)"/>
+
+        <InputText class="form-control" @bind-Value="_registerModel.Password" placeholder="Heslo" type="password"/>
+        <ValidationMessage For="@(() => _registerModel.Password)"/>
+
+        <InputText class="form-control" @bind-Value="_registerModel.ConfirmPassword" placeholder="Heslo znovu" type="password"/>
+        <ValidationMessage For="@(() => _registerModel.ConfirmPassword)"/>
+
+        <button class="btn btn-success mt-2" type="submit">Registrovat</button>
         <button class="btn btn-link" type="button" @onclick="() => _showRegister = false">Zpět</button>
     </EditForm>
 }
 
-<p>@_message</p>
+@if (!string.IsNullOrWhiteSpace(_message))
+{
+    <div class="alert alert-warning mt-3">@_message</div>
+}
 
 @code {
     private bool _showRegister = false;
@@ -50,46 +65,31 @@ else
 
     private void HandleLogin()
     {
-        try
+        using var db = Database.Get();
+
+        var user = db.QueryFirstOrDefault<User>(
+            "SELECT * FROM Users WHERE Email = @Email", new { _loginModel.Email });
+
+        if (user == null)
         {
-            Console.WriteLine($"[LOGIN] Zkouším přihlásit: {_loginModel.Email}");
-
-            using var db = Database.Get();
-
-            var user = db.QueryFirstOrDefault<User>(
-                "SELECT * FROM Users WHERE Email = @Email", new { _loginModel.Email });
-
-            if (user == null)
-            {
-                Console.WriteLine("[LOGIN] Uživatel nenalezen.");
-                _message = "Uživatel neexistuje.";
-                return;
-            }
-
-            Console.WriteLine($"[LOGIN] Hash v databázi: {user.Password}");
-            Console.WriteLine($"[LOGIN] Zadané heslo: {_loginModel.Password}");
-
-            if (BCrypt.Net.BCrypt.Verify(_loginModel.Password, user.Password))
-            {
-                Console.WriteLine("[LOGIN] Přihlášení úspěšné.");
-                Session.Login(user);
-                Navigation.NavigateTo("/");
-            }
-            else
-            {
-                Console.WriteLine("[LOGIN] Nesprávné heslo.");
-                _message = "Neplatné přihlašovací údaje.";
-            }
+            _message = "Uživatel neexistuje.";
+            return;
         }
-        catch (Exception ex)
+
+        if (BCrypt.Net.BCrypt.Verify(_loginModel.Password, user.Password))
         {
-            Console.WriteLine($"[LOGIN] Výjimka: {ex.Message}");
-            _message = "Chyba při přihlášení.";
+            Session.Login(user);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            _message = "Neplatné přihlašovací údaje.";
         }
     }
 
     private void HandleRegister()
     {
+        Console.WriteLine("🟢 HandleRegister spuštěn");
         if (_registerModel.Password != _registerModel.ConfirmPassword)
         {
             _message = "Hesla se neshodují.";
@@ -97,6 +97,7 @@ else
         }
 
         using var db = Database.Get();
+
         var existing = db.QueryFirstOrDefault<User>(
             "SELECT * FROM Users WHERE Email = @Email", new { _registerModel.Email });
 
@@ -109,13 +110,14 @@ else
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(_registerModel.Password);
 
         db.Execute(@"
-            INSERT INTO Users (Name, Email, Phone, PasswordHash, Role)
-            VALUES (@Name, @Email, @Phone, @PasswordHash, 'User');", new
+            INSERT INTO Users (Name, Email, Phone, Password, Role)
+            VALUES (@Name, @Email, @Phone, @Password, 'User');
+        ", new
         {
             _registerModel.Name,
             _registerModel.Email,
             _registerModel.Phone,
-            PasswordHash = passwordHash
+            Password = passwordHash
         });
 
         var user = db.QueryFirstOrDefault<User>(
@@ -134,29 +136,33 @@ else
 
     public class LoginModel
     {
-        [Required]
+        [Required(ErrorMessage = "Email je povinný")]
+        [EmailAddress(ErrorMessage = "Neplatný formát emailu")]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Heslo je povinné")]
         public string Password { get; set; } = "";
     }
 
     public class RegisterModel
     {
-        [Required]
+        [Required(ErrorMessage = "Jméno je povinné")]
         public string Name { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Email je povinný")]
+        [EmailAddress(ErrorMessage = "Neplatný formát emailu")]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Telefon je povinný")]
+        [RegularExpression(@"^\d{9,15}$", ErrorMessage = "Zadejte platné číslo (9 až 15 číslic)")]
         public string Phone { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Heslo je povinné")]
+        [MinLength(6, ErrorMessage = "Heslo musí mít alespoň 6 znaků")]
         public string Password { get; set; } = "";
 
-        [Required]
-        [Compare(nameof(Password), ErrorMessage = "Hesla se neshodují.")]
+        [Required(ErrorMessage = "Zopakujte heslo")]
+        [Compare(nameof(Password), ErrorMessage = "Hesla se neshodují")]
         public string ConfirmPassword { get; set; } = "";
     }
 }
