@@ -4,6 +4,7 @@ using blogic.Data;
 using System.Data;
 using Microsoft.Data.Sqlite; // přidáš pro Sqlite
 
+
 namespace blogic;
 
 public class Program

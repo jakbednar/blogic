@@ -2,8 +2,11 @@ namespace blogic.Models;
 
 public class CartItem
 {
-    public Product Product { get; set; } = null!;
+    public int CartItemId { get; set; }
+    public int UserId { get; set; }
+    public int ProductId { get; set; }
     public int Quantity { get; set; }
+    public int Id { get; set; }
 
-    public int TotalPrice => Quantity * Product.Price;
+    public Product? Product { get; set; }  // volitelně pro napojení detailů
 }

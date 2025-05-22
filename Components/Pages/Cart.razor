@@ -10,41 +10,40 @@
 </header>
 
 <div style="padding: 30px; max-width: 900px; margin: auto;">
-
     @if (_cart.Any())
     {
         <table class="cart-table">
             <thead>
-            <tr>
-                <th rowspan="2">Produkt</th>
-                <th colspan="2" style="text-align: center;">Cena</th>
-                <th rowspan="2">Množství</th>
-                <th rowspan="2">Akce</th>
-            </tr>
+                <tr>
+                    <th>Produkt</th>
+                    <th>Cena / ks</th>
+                    <th>Celkem</th>
+                    <th>Množství</th>
+                    <th>Akce</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in _cart)
-            {
-                <tr>
-                    <td class="product-info">
-                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="cart-img" />
-                        <span>@item.Product.Name</span>
-                    </td>
-                    <td>@item.Product.Price Kč / Ks</td>
-                    <td style="color: green;">@item.TotalPrice Kč</td>
-                    <td>
-                        <input type="number" min="1" @bind="item.Quantity" class="quantity-input" />
-                    </td>
-                    <td>
-                        <button class="action-button delete-button" @onclick="() => RemoveItem(item.Product.ProductID)" title="Odstranit položku">
-                            ❌
-                        </button>
-                    </td>
-                </tr>
-            }
+                @foreach (var item in _cart)
+                {
+                    <tr>
+                        <td class="product-info">
+                            <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="cart-img" />
+                            <span>@item.Product.Name</span>
+                        </td>
+                        <td>@item.Product.Price Kč</td>
+                        <td style="color: green;">@(item.Product.Price * item.Quantity) Kč</td>
+                        <td>
+                            <input type="number" min="1" @bind="item.Quantity" class="quantity-input" />
+                        </td>
+                        <td>
+                            <button class="action-button delete-button" @onclick="() => RemoveItem(item.CartItemId)" title="Odstranit položku">
+                                ❌
+                            </button>
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
-
 
         <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Product.Price * p.Quantity) Kč</p>
 
@@ -64,9 +63,9 @@
         _cart = CartService.GetCartItems();
     }
 
-    private void RemoveItem(int productId)
+    private void RemoveItem(int cartItemId)
     {
-        CartService.Remove(productId);
+        CartService.RemoveFromCart(cartItemId);
         _cart = CartService.GetCartItems();
     }
 }

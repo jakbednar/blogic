@@ -49,7 +49,7 @@
                     }
                     <p class="price">@product.Price Kč</p>
                     <button class="buy-button"
-                            @onclick="() => AddToCart(product)"
+                            @onclick="() => AddToCart(product.ProductID)"
                             disabled="@(stockLeft <= 0)">
                         Koupit
                     </button>
@@ -71,20 +71,24 @@
         products = new List<Product>(allProducts);
     }
 
-    private void AddToCart(Product product)
+    private void AddToCart(int productId)
     {
-        CartService.Add(product);
+        CartService.AddToCart(productId);
 
-        var message = $"Přidáno do košíku: {product.Name}";
-        toastMessages.Add(message);
-        StateHasChanged();
-
-        _ = Task.Run(async () =>
+        var product = allProducts.FirstOrDefault(p => p.ProductID == productId);
+        if (product != null)
         {
-            await Task.Delay(3000);
-            toastMessages.Remove(message);
-            await InvokeAsync(StateHasChanged);
-        });
+            var message = $"Přidáno do košíku: {product.Name}";
+            toastMessages.Add(message);
+            StateHasChanged();
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(3000);
+                toastMessages.Remove(message);
+                await InvokeAsync(StateHasChanged);
+            });
+        }
     }
 
     private void Search()
@@ -100,7 +104,7 @@
                 .ToList();
         }
     }
-    
+
     private void HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")

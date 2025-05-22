@@ -1,52 +1,86 @@
 using blogic.Models;
+using Dapper;
+using System.Data;
 
 namespace blogic.Services;
 
 public class CartService
 {
-    private readonly List<CartItem> _cartItems = new();
+    private readonly IDbConnection _db;
+    private readonly UserSessionService _session;
 
     public event Action? OnChange;
 
-    public void Add(Product product)
+    public CartService(IDbConnection db, UserSessionService session)
     {
-        var existingItem = _cartItems.FirstOrDefault(ci => ci.Product.ProductID == product.ProductID);
+        _db = db;
+        _session = session;
+    }
 
-        if (existingItem != null)
+    private void NotifyStateChanged() => OnChange?.Invoke();
+
+    public List<CartItem> GetCartItems()
+    {
+        if (!_session.IsLoggedIn) return new();
+
+        var sql = @"
+            SELECT c.Id, c.UserId, c.ProductId, c.Quantity,
+                   p.ProductId, p.Name, p.Price, p.Quantity AS ProductQuantity, p.ImageUrl, p.IsDeleted, p.DateCreated, p.CreatedBy
+            FROM CartItems c
+            JOIN Products p ON p.ProductId = c.ProductId
+            WHERE c.UserId = @UserId";
+
+        var items = _db.Query<CartItem, Product, CartItem>(
+            sql,
+            (cart, product) =>
+            {
+                cart.Product = product;
+                return cart;
+            },
+            new { UserId = _session.CurrentUser!.UserId },
+            splitOn: "ProductId"
+        ).ToList();
+
+        return items;
+    }
+
+    public void AddToCart(int productId)
+    {
+        if (!_session.IsLoggedIn) return;
+
+        var existing = _db.QueryFirstOrDefault<CartItem>(
+            "SELECT * FROM CartItems WHERE UserId = @UserId AND ProductId = @ProductId",
+            new { UserId = _session.CurrentUser!.UserId, ProductId = productId });
+
+        if (existing != null)
         {
-            existingItem.Quantity++;
+            _db.Execute("UPDATE CartItems SET Quantity = Quantity + 1 WHERE Id = @Id", new { Id = existing.Id });
         }
         else
         {
-            _cartItems.Add(new CartItem
-            {
-                Product = product,
-                Quantity = 1
-            });
+            _db.Execute("INSERT INTO CartItems (UserId, ProductId, Quantity) VALUES (@UserId, @ProductId, 1)",
+                new { UserId = _session.CurrentUser!.UserId, ProductId = productId });
         }
 
-        OnChange?.Invoke();
+        NotifyStateChanged();
     }
 
-    public void Remove(int productId)
+    public void RemoveFromCart(int itemId)
     {
-        var item = _cartItems.FirstOrDefault(ci => ci.Product.ProductID == productId);
-        if (item != null)
-        {
-            _cartItems.Remove(item);
-            OnChange?.Invoke();
-        }
+        if (!_session.IsLoggedIn) return;
+
+        _db.Execute("DELETE FROM CartItems WHERE Id = @Id AND UserId = @UserId",
+            new { Id = itemId, UserId = _session.CurrentUser!.UserId });
+
+        NotifyStateChanged();
     }
 
-    public List<CartItem> GetCartItems() => _cartItems;
-
-    public int GetCartCount() => _cartItems.Sum(ci => ci.Quantity);
-
-    public decimal GetTotalPrice() => _cartItems.Sum(ci => ci.Product.Price * ci.Quantity);
-
-    public void Clear()
+    public int GetCartCount()
     {
-        _cartItems.Clear();
-        OnChange?.Invoke();
+        if (!_session.IsLoggedIn) return 0;
+
+        return _db.ExecuteScalar<int>(
+            "SELECT IFNULL(SUM(Quantity), 0) FROM CartItems WHERE UserId = @UserId",
+            new { UserId = _session.CurrentUser!.UserId });
     }
 }
