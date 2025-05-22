@@ -1,6 +1,9 @@
 @page "/credits"
 @rendermode InteractiveServer
 @inject blogic.Services.UserSessionService Session
+@using Dapper
+@using blogic.Data
+@using blogic.Models
 
 <h2>💳 Dobití kreditu</h2>
 
@@ -10,6 +13,7 @@
 }
 else
 {
+    <h3>Aktuální částka: @Session.CurrentUser?.Credit Kč</h3>
     <p>Vyber částku, kterou chceš dobít:</p>
 
     <div class="d-flex gap-2 flex-wrap">
@@ -22,7 +26,7 @@ else
     {
         <div class="mt-4">
             <p>💰 Vybral jsi: <strong>@_selectedAmount Kč</strong></p>
-            <button class="btn btn-success">➡️ Pokračovat na platbu</button>
+            <button class="btn btn-success" @onclick="ProcessPayment">➡️ Pokračovat na platbu</button>
         </div>
     }
 }
@@ -33,5 +37,30 @@ else
     private void SelectAmount(int amount)
     {
         _selectedAmount = amount;
+    }
+
+    private void ProcessPayment()
+    {
+        if (!Session.IsLoggedIn || Session.CurrentUser is null)
+            return;
+
+        var userId = Session.CurrentUser.UserId;
+
+        using var db = Database.Get();
+
+        db.Execute(
+            "UPDATE Users SET Credit = Credit + @Amount WHERE UserID = @UserID",
+            new { Amount = _selectedAmount, UserID = userId }
+        );
+
+        var refreshed = db.QueryFirstOrDefault<User>(
+            "SELECT * FROM Users WHERE UserID = @UserID", new { UserID = userId });
+
+        if (refreshed != null)
+        {
+            Session.Refresh(refreshed);
+        }
+
+        _selectedAmount = 0;
     }
 }

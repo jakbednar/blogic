@@ -15,17 +15,15 @@ public class UserService
 
     public bool Register(User user)
     {
-        // Check if user exists
         var existing = _db.QueryFirstOrDefault<User>("SELECT * FROM Users WHERE Email = @Email", new { user.Email });
         if (existing != null) return false;
 
-        // Hash password
-        string hash = BCrypt.Net.BCrypt.HashPassword(user.Password); // pouzijeme Password
+        string hash = BCrypt.Net.BCrypt.HashPassword(user.Password);
         user.Password = hash;
 
         _db.Execute("""
-                        INSERT INTO Users (Name, Email, Password, Role, ImageUrl)
-                        VALUES (@Name, @Email, @Password, @Role, @ImageUrl)
+                        INSERT INTO Users (Name, Email, Password, Credit, Role, ImageUrl)
+                        VALUES (@Name, @Email, @Password, @Credit, @Role, @ImageUrl)
                     """, user);
 
         return true;
