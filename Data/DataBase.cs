@@ -32,7 +32,9 @@ public static class Database
                 Quantity INTEGER NOT NULL,
                 ImageUrl TEXT,
                 IsDeleted INTEGER DEFAULT 0,
-                DateCreated TEXT DEFAULT (datetime('now'))
+                DateCreated TEXT DEFAULT (datetime('now')),
+                CreatedBy INTEGER NOT NULL DEFAULT 1,
+                FOREIGN KEY (CreatedBy) REFERENCES Users(UserId)
             );
 
             CREATE TABLE IF NOT EXISTS Orders (
@@ -63,11 +65,11 @@ public static class Database
         }
 
         db.Execute("""
-            INSERT INTO Products (Name, Price, Quantity)
+            INSERT INTO Products (Name, Price, Quantity, CreatedBy)
             VALUES
-            ('Birell', 5, 50),
-            ('Pepsi 0.5l', 15, 25),
-            ('7 Days Croissant', 10, 100);
+            ('Birell', 5, 50, 1),
+            ('Pepsi 0.5l', 15, 25, 1),
+            ('7 Days Croissant', 10, 100, 1);
         """);
     }
 }
