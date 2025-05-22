@@ -76,12 +76,16 @@ public static class Database
             });
         }
 
-        db.Execute("""
-            INSERT INTO Products (Name, Price, Quantity, CreatedBy)
-            VALUES
-            ('Birell', 5, 50, 1),
-            ('Pepsi 0.5l', 15, 25, 1),
-            ('7 Days Croissant', 10, 100, 1);
-        """);
+        var productExists = db.QueryFirstOrDefault("SELECT 1 FROM Products LIMIT 1");
+        if (productExists == null)
+        {
+            db.Execute("""
+                INSERT INTO Products (Name, Price, Quantity, CreatedBy)
+                VALUES
+                ('Birell', 5, 50, 1),
+                ('Pepsi 0.5l', 15, 25, 1),
+                ('7 Days Croissant', 10, 100, 1);
+            """);
+        }
     }
-} 
+}
