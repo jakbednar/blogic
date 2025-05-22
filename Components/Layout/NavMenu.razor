@@ -2,6 +2,7 @@
 @inject blogic.Services.CartService CartService
 @inject blogic.Services.UserSessionService Session
 @inject NavigationManager Navigation
+@using blogic.Models
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -19,7 +20,7 @@
         {
             <div class="user-dropdown-hover">
                 <div class="user-trigger">
-                    👤 @Session.CurrentUser?.Name
+                    👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč
                 </div>
                 <ul class="dropdown-menu">
                     <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
