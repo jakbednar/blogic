@@ -1,7 +1,10 @@
 ﻿@page "/"
 @using blogic.Models
-@inject blogic.Services.ProductService ProductService
-@inject blogic.Services.CartService CartService
+@using blogic.Services
+@inject ProductService ProductService
+@inject CartService CartService
+@inject NavigationManager Navigation
+@inject UserSessionService Session
 @rendermode InteractiveServer
 
 <PageTitle>Domov</PageTitle>
@@ -23,7 +26,7 @@
         <button class="search-button" @onclick="Search">Hledat</button>
     </div>
 
-    @if (products == null)
+    @if (products == null || reservedQuantities == null)
     {
         <p>Načítám...</p>
     }
@@ -32,9 +35,8 @@
         <div class="product-grid">
             @foreach (var product in products)
             {
-                var inCart = CartService.GetCartItems()
-                    .FirstOrDefault(ci => ci.Product.ProductID == product.ProductID)?.Quantity ?? 0;
-                var stockLeft = product.Quantity - inCart;
+                var reserved = reservedQuantities.TryGetValue(product.ProductID, out var value) ? value : 0;
+                var stockLeft = product.Quantity - reserved;
 
                 <div class="product-card">
                     <img src="@product.ImageUrl" alt="@product.Name" class="product-image" />
@@ -45,7 +47,7 @@
                     }
                     else
                     {
-                        <p style="color: red" class="out-stock">Skladem @stockLeft ks</p>
+                        <p style="color: red" class="out-stock">Není skladem</p>
                     }
                     <p class="price">@product.Price Kč</p>
                     <button class="buy-button"
@@ -61,18 +63,26 @@
 
 @code {
     private List<Product> allProducts = new();
-    private string searchTerm = string.Empty;
     private List<Product>? products;
+    private Dictionary<int, int> reservedQuantities = new();
     private List<string> toastMessages = new();
+    private string searchTerm = string.Empty;
 
     protected override void OnInitialized()
     {
         allProducts = ProductService.GetAllProducts();
         products = new List<Product>(allProducts);
+        reservedQuantities = ProductService.GetReservedQuantities();
     }
 
     private void AddToCart(int productId)
     {
+        if (!Session.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
         CartService.AddToCart(productId);
 
         var product = allProducts.FirstOrDefault(p => p.ProductID == productId);
@@ -88,6 +98,9 @@
                 toastMessages.Remove(message);
                 await InvokeAsync(StateHasChanged);
             });
+
+            // aktualizuj rezervace
+            reservedQuantities = ProductService.GetReservedQuantities();
         }
     }
 

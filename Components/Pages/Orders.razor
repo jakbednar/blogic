@@ -1,24 +1,53 @@
 @page "/orders"
+@using System.Data
+@using Dapper
 @rendermode InteractiveServer
 @inject blogic.Services.UserSessionService Session
+@inject IDbConnection Db
 
-
-<h2>🧾 Moje objednávky</h2>
-
-@if (!Session.IsLoggedIn)
+@if (orders == null)
 {
-    <div class="alert alert-warning mt-3">Pro zobrazení objednávek se musíš přihlásit.</div>
+    <p>Načítám...</p>
+}
+else if (!orders.Any())
+{
+    <p>Nemáš žádné objednávky.</p>
 }
 else
 {
-    <p>Vítej, <strong>@Session.CurrentUser?.Name</strong>!</p>
-
-    <h5 class="mt-4">Tady budou tvoje objednávky:</h5>
-
-    <!-- Zatím jen ukázkový obsah -->
-    <ul class="list-group mt-2">
-        <li class="list-group-item">📦 Objednávka č. 100001 – 2x produkt A – 21. 5. 2025</li>
-        <li class="list-group-item">📦 Objednávka č. 100002 – 1x produkt B – 18. 5. 2025</li>
-        <li class="list-group-item text-muted">… objednávky se budou načítat z databáze</li>
+    <ul>
+        @foreach (var o in orders)
+        {
+            <li>
+                🛍️ <strong>@o.ProductName</strong> – @o.Quantity ks – @o.DateCreated
+            </li>
+        }
     </ul>
+}
+
+@code {
+    private List<OrderView> orders;
+
+    protected override void OnInitialized()
+    {
+        if (!Session.IsLoggedIn) return;
+
+        orders = Db.Query<OrderView>(
+            @"SELECT o.OrderId, o.Quantity, o.DateCreated,
+                     p.Name AS ProductName
+              FROM Orders o
+              JOIN Products p ON p.ProductId = o.ProductId
+              WHERE o.UserId = @UserId
+              ORDER BY o.DateCreated DESC",
+            new { UserId = Session.CurrentUser!.UserId }
+        ).ToList();
+    }
+
+    private class OrderView
+    {
+        public int OrderId { get; set; }
+        public int Quantity { get; set; }
+        public string ProductName { get; set; } = "";
+        public string DateCreated { get; set; } = "";
+    }
 }

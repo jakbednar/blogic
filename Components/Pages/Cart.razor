@@ -1,6 +1,12 @@
 @page "/cart"
+@using System.Data
 @using blogic.Models
+@using Dapper
 @inject blogic.Services.CartService CartService
+@inject blogic.Services.ProductService ProductService
+@inject blogic.Services.UserSessionService Session
+@inject NavigationManager Navigation
+@inject IDbConnection Db
 @rendermode InteractiveServer
 
 <PageTitle>Košík</PageTitle>
@@ -8,6 +14,13 @@
 <header style="background-image: url('https://images.unsplash.com/photo-1559561854-266fba0e52c6'); background-size: cover; background-position: center; height: 200px; display: flex; align-items: center; justify-content: center; color: black; font-size: 2rem; font-weight: bold;">
     Moje objednávky
 </header>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" style="margin-bottom: 20px; color: green; font-weight: bold;">
+        @successMessage
+    </div>
+}
 
 <div style="padding: 30px; max-width: 900px; margin: auto;">
     @if (_cart.Any())
@@ -33,10 +46,12 @@
                         <td>@item.Product.Price Kč</td>
                         <td style="color: green;">@(item.Product.Price * item.Quantity) Kč</td>
                         <td>
-                            <input type="number" min="1" @bind="item.Quantity" class="quantity-input" />
+                            <button @onclick="() => DecreaseQuantity(item.Product.ProductID)">-</button>
+                            @item.Quantity
+                            <button @onclick="() => IncreaseQuantity(item.Product.ProductID)">+</button>
                         </td>
                         <td>
-                            <button class="action-button delete-button" @onclick="() => RemoveItem(item.CartItemId)" title="Odstranit položku">
+                            <button class="action-button delete-button" @onclick="() => RemoveItem(item.Product.ProductID)" title="Odstranit položku">
                                 ❌
                             </button>
                         </td>
@@ -47,7 +62,7 @@
 
         <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Product.Price * p.Quantity) Kč</p>
 
-        <button class="export-button">Objednat</button>
+        <button class="export-button" @onclick="PlaceOrder">Objednat</button>
     }
     else
     {
@@ -57,15 +72,56 @@
 
 @code {
     private List<CartItem> _cart = new();
+    private string? successMessage = null;
 
     protected override void OnInitialized()
     {
         _cart = CartService.GetCartItems();
     }
 
-    private void RemoveItem(int cartItemId)
+    private void IncreaseQuantity(int productId)
     {
-        CartService.RemoveFromCart(cartItemId);
+        CartService.IncreaseQuantity(productId);
         _cart = CartService.GetCartItems();
     }
+
+    private void DecreaseQuantity(int productId)
+    {
+        CartService.DecreaseQuantity(productId);
+        _cart = CartService.GetCartItems();
+    }
+
+    private void RemoveItem(int productId)
+    {
+        CartService.RemoveProduct(productId);
+        _cart = CartService.GetCartItems();
+    }
+
+    private async Task PlaceOrder()
+    {
+        foreach (var item in _cart)
+        {
+            await ProductService.DecreaseStockAsync(item.Product.ProductID, item.Quantity);
+
+            // Uložení objednávky do tabulky Orders
+            Db.Execute(
+                "INSERT INTO Orders (UserId, ProductId, Quantity) VALUES (@UserId, @ProductId, @Quantity)",
+                new
+                {
+                    UserId = Session.CurrentUser!.UserId,
+                    ProductId = item.Product.ProductID,
+                    Quantity = item.Quantity
+                });
+        }
+
+        CartService.ClearCart();
+        _cart = new();
+        successMessage = "✅ Objednávka byla úspěšně odeslána.";
+
+        StateHasChanged();
+        await Task.Delay(5000);
+        successMessage = null;
+        StateHasChanged();
+    }
+
 }

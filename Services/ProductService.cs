@@ -1,6 +1,7 @@
 using blogic.Models;
 using Dapper;
 using System.Data;
+using System.Linq;
 
 namespace blogic.Services;
 
@@ -49,4 +50,20 @@ public class ProductService
     {
         _db.Execute("UPDATE Products SET IsDeleted = 1 WHERE ProductID = @Id", new { Id = productId });
     }
+    
+    public async Task DecreaseStockAsync(int productId, int quantity)
+    {
+        await _db.ExecuteAsync(@"
+        UPDATE Products 
+        SET Quantity = Quantity - @Quantity 
+        WHERE ProductID = @ProductId", new { ProductId = productId, Quantity = quantity });
+    }
+    
+    public Dictionary<int, int> GetReservedQuantities()
+    {
+        var sql = "SELECT ProductId, SUM(Quantity) AS Reserved FROM CartItems GROUP BY ProductId";
+        return _db.Query(sql)
+            .ToDictionary(row => (int)row.ProductId, row => (int?)row.Reserved ?? 0);
+    }
+
 }
