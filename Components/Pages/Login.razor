@@ -56,27 +56,20 @@ else
         Session.ClearFlashMessage();
     }
 
-    private void HandleLogin()
+    private async Task HandleLogin()
     {
-        try
-        {
-            using var db = Database.Get();
-            var user = db.QueryFirstOrDefault<User>(
-                "SELECT * FROM Users WHERE Email = @Email", new { _loginModel.Email });
+        using var db = Database.Get();
+        var user = db.QueryFirstOrDefault<User>(
+            "SELECT * FROM Users WHERE Email = @Email", new { _loginModel.Email });
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(_loginModel.Password, user.Password))
-            {
-                _message = "Neplatné přihlašovací údaje.";
-                return;
-            }
-
-            Session.Login(user);
-            Navigation.NavigateTo("/");
-        }
-        catch (Exception)
+        if (user == null || !BCrypt.Net.BCrypt.Verify(_loginModel.Password, user.Password))
         {
-            _message = "Chyba při přihlášení.";
+            _message = "Neplatné přihlašovací údaje.";
+            return;
         }
+
+        await Session.Login(user);
+        Navigation.NavigateTo("/");
     }
 
     private void HandleRegister()

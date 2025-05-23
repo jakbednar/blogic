@@ -2,71 +2,74 @@
 @inject blogic.Services.CartService CartService
 @inject blogic.Services.UserSessionService Session
 @inject NavigationManager Navigation
+@inject System.Data.IDbConnection Db
 @using blogic.Models
 @implements IDisposable
 @rendermode InteractiveServer
 
-<header class="top-navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: black; color: white;">
-    <NavLink class="brand" href="/" style="font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white;">
-        DUTY<span style="color: orange;">FREE</span>
-    </NavLink>
-
-    <div class="navbar-actions" style="display: flex; gap: 10px;">
-        <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
-            🛒 Košík (@CartService.GetCartCount())
+@if (!_ready)
+{
+    <div style="padding: 1rem; color: gray;">Načítání přihlášení...</div>
+}
+else
+{
+    <header class="top-navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: black; color: white;">
+        <NavLink class="brand" href="/" style="font-size: 1.5rem; font-weight: bold; text-decoration: none; color: white;">
+            DUTY<span style="color: orange;">FREE</span>
         </NavLink>
 
-        @if (Session.IsLoggedIn)
-        {
-            <div class="user-dropdown-hover">
-                <div class="user-trigger">
-                    👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč
-                </div>
-                <ul class="dropdown-menu">
-                    <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
-                    <li><NavLink class="dropdown-item" href="/profile">🛠 Upravit profil</NavLink></li>
-                    <li><NavLink class="dropdown-item" href="/credits">💳 Dobít kredity</NavLink></li>
-
-                    @if (Session.IsAdmin)
-                    {
-                        <li><NavLink class="dropdown-item" href="/add">➕ Přidej produkt</NavLink></li>
-                    }
-
-                    <li><a href="#" class="dropdown-item" @onclick="Logout">🚪 Odhlásit se</a></li>
-                </ul>
-            </div>
-        }
-        else
-        {
-            <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/login">
-                🔐 Přihlášení
+        <div class="navbar-actions" style="display: flex; gap: 10px;">
+            <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
+                🛒 Košík (@CartService.GetCartCount())
             </NavLink>
-        }
-    </div>
-</header>
 
-<div class="layout-container">
-    <div class="page">
-        <main>
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    </div>
-</div>
+            @if (Session.IsLoggedIn)
+            {
+                <div class="user-dropdown-hover">
+                    <div class="user-trigger">
+                        👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
+                        <li><NavLink class="dropdown-item" href="/profile">🛠 Upravit profil</NavLink></li>
+                        <li><NavLink class="dropdown-item" href="/credits">💳 Dobít kredity</NavLink></li>
+
+                        @if (Session.IsAdmin)
+                        {
+                            <li><NavLink class="dropdown-item" href="/add">➕ Přidej produkt</NavLink></li>
+                        }
+
+                        <li><a href="#" class="dropdown-item" @onclick="Logout">🚪 Odhlásit se</a></li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/login">
+                    🔐 Přihlášení
+                </NavLink>
+            }
+        </div>
+    </header>
+}
 
 @code {
-    private bool _showDropdown = false;
+    private bool _ready = false;
 
     protected override void OnInitialized()
     {
-        CartService.OnChange += StateHasChanged;
         Session.OnChange += StateHasChanged;
+        CartService.OnChange += StateHasChanged;
     }
 
-    private void ToggleDropdown()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _showDropdown = !_showDropdown;
+        if (firstRender && !_ready)
+        {
+            await Session.TryRestoreSession(Db);
+            _ready = true;
+            StateHasChanged();
+        }
     }
 
     private void Logout()
@@ -77,7 +80,7 @@
 
     public void Dispose()
     {
-        CartService.OnChange -= StateHasChanged;
         Session.OnChange -= StateHasChanged;
+        CartService.OnChange -= StateHasChanged;
     }
 }
