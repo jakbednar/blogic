@@ -96,19 +96,23 @@
         CartService.RemoveProduct(productId);
         _cart = CartService.GetCartItems();
     }
-
+    
     private async Task PlaceOrder()
     {
+        var orderId = Db.ExecuteScalar<int>(
+            "INSERT INTO OrderGroups (UserId) VALUES (@UserId); SELECT last_insert_rowid();",
+            new { UserId = Session.CurrentUser!.UserId }
+        );
+
         foreach (var item in _cart)
         {
             await ProductService.DecreaseStockAsync(item.Product.ProductID, item.Quantity);
 
-            // Uložení objednávky do tabulky Orders
             Db.Execute(
-                "INSERT INTO Orders (UserId, ProductId, Quantity) VALUES (@UserId, @ProductId, @Quantity)",
+                "INSERT INTO OrderItems (OrderId, ProductId, Quantity) VALUES (@OrderId, @ProductId, @Quantity)",
                 new
                 {
-                    UserId = Session.CurrentUser!.UserId,
+                    OrderId = orderId,
                     ProductId = item.Product.ProductID,
                     Quantity = item.Quantity
                 });

@@ -1,53 +1,85 @@
 @page "/orders"
 @using System.Data
 @using Dapper
-@rendermode InteractiveServer
 @inject blogic.Services.UserSessionService Session
 @inject IDbConnection Db
+@rendermode InteractiveServer
 
-@if (orders == null)
+<link href="css/orders.css" rel="stylesheet" />
+
+@if (!Session.IsLoggedIn)
 {
-    <p>Načítám...</p>
+    <p style="text-align:center; margin-top: 100px;">🔒 Musíš být přihlášen.</p>
 }
-else if (!orders.Any())
+else if (groupedOrders == null || !groupedOrders.Any())
 {
-    <p>Nemáš žádné objednávky.</p>
+    <p style="text-align:center; margin-top: 100px;">🕵️‍♂️ Nemáš žádné objednávky.</p>
 }
 else
 {
-    <ul>
-        @foreach (var o in orders)
-        {
-            <li>
-                🛍️ <strong>@o.ProductName</strong> – @o.Quantity ks – @o.DateCreated
-            </li>
-        }
-    </ul>
+    @foreach (var order in groupedOrders)
+    {
+        <div class="order-container">
+            <div class="order-header">🧾 Objednávka #@order.OrderId <span class="order-label">(@order.DateCreated)</span></div>
+            <ul class="order-items">
+                @foreach (var item in order.Items)
+                {
+                    <li>📦 <strong>@item.ProductName</strong> — <span>@item.Quantity ks</span></li>
+                }
+            </ul>
+        </div>
+    }
 }
 
 @code {
-    private List<OrderView> orders;
+    private List<OrderGroupView> groupedOrders = new();
 
     protected override void OnInitialized()
     {
         if (!Session.IsLoggedIn) return;
 
-        orders = Db.Query<OrderView>(
-            @"SELECT o.OrderId, o.Quantity, o.DateCreated,
-                     p.Name AS ProductName
-              FROM Orders o
-              JOIN Products p ON p.ProductId = o.ProductId
-              WHERE o.UserId = @UserId
-              ORDER BY o.DateCreated DESC",
+        var raw = Db.Query<OrderFlat>(
+            @"SELECT og.OrderId, og.DateCreated, oi.Quantity, p.Name AS ProductName
+              FROM OrderGroups og
+              JOIN OrderItems oi ON og.OrderId = oi.OrderId
+              JOIN Products p ON p.ProductId = oi.ProductId
+              WHERE og.UserId = @UserId
+              ORDER BY og.DateCreated DESC",
             new { UserId = Session.CurrentUser!.UserId }
         ).ToList();
+
+        groupedOrders = raw
+            .GroupBy(o => new { o.OrderId, o.DateCreated })
+            .Select(g => new OrderGroupView
+            {
+                OrderId = g.Key.OrderId,
+                DateCreated = g.Key.DateCreated,
+                Items = g.Select(i => new OrderItemView
+                {
+                    ProductName = i.ProductName,
+                    Quantity = i.Quantity
+                }).ToList()
+            }).ToList();
     }
 
-    private class OrderView
+    private class OrderFlat
     {
         public int OrderId { get; set; }
+        public string DateCreated { get; set; } = "";
         public int Quantity { get; set; }
         public string ProductName { get; set; } = "";
+    }
+
+    private class OrderGroupView
+    {
+        public int OrderId { get; set; }
         public string DateCreated { get; set; } = "";
+        public List<OrderItemView> Items { get; set; } = new();
+    }
+
+    private class OrderItemView
+    {
+        public string ProductName { get; set; } = "";
+        public int Quantity { get; set; }
     }
 }
