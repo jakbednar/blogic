@@ -65,12 +65,75 @@ public class CartService
         NotifyStateChanged();
     }
 
-    public void RemoveFromCart(int itemId)
+    public void RemoveProduct(int productId)
     {
         if (!_session.IsLoggedIn) return;
 
-        _db.Execute("DELETE FROM CartItems WHERE Id = @Id AND UserId = @UserId",
-            new { Id = itemId, UserId = _session.CurrentUser!.UserId });
+        _db.Execute("DELETE FROM CartItems WHERE UserId = @UserId AND ProductId = @ProductId",
+            new { UserId = _session.CurrentUser!.UserId, ProductId = productId });
+
+        NotifyStateChanged();
+    }
+
+    public void IncreaseQuantity(int productId)
+    {
+        if (!_session.IsLoggedIn) return;
+
+        var item = _db.QueryFirstOrDefault<CartItem>(
+            "SELECT * FROM CartItems WHERE UserId = @UserId AND ProductId = @ProductId",
+            new { UserId = _session.CurrentUser!.UserId, ProductId = productId });
+
+        var stock = _db.ExecuteScalar<int>(
+            "SELECT Quantity FROM Products WHERE ProductId = @ProductId",
+            new { ProductId = productId });
+
+        if (item != null && item.Quantity < stock)
+        {
+            _db.Execute(
+                "UPDATE CartItems SET Quantity = Quantity + 1 WHERE Id = @Id",
+                new { Id = item.Id });
+
+            NotifyStateChanged();
+        }
+        else if (item == null && stock > 0)
+        {
+            _db.Execute(
+                "INSERT INTO CartItems (UserId, ProductId, Quantity) VALUES (@UserId, @ProductId, 1)",
+                new { UserId = _session.CurrentUser!.UserId, ProductId = productId });
+
+            NotifyStateChanged();
+        }
+    }
+
+    public void DecreaseQuantity(int productId)
+    {
+        if (!_session.IsLoggedIn) return;
+
+        var item = _db.QueryFirstOrDefault<CartItem>(
+            "SELECT * FROM CartItems WHERE UserId = @UserId AND ProductId = @ProductId",
+            new { UserId = _session.CurrentUser!.UserId, ProductId = productId });
+
+        if (item != null)
+        {
+            if (item.Quantity > 1)
+            {
+                _db.Execute("UPDATE CartItems SET Quantity = Quantity - 1 WHERE Id = @Id", new { Id = item.Id });
+            }
+            else
+            {
+                _db.Execute("DELETE FROM CartItems WHERE Id = @Id", new { Id = item.Id });
+            }
+
+            NotifyStateChanged();
+        }
+    }
+
+    public void ClearCart()
+    {
+        if (!_session.IsLoggedIn) return;
+
+        _db.Execute("DELETE FROM CartItems WHERE UserId = @UserId",
+            new { UserId = _session.CurrentUser!.UserId });
 
         NotifyStateChanged();
     }
