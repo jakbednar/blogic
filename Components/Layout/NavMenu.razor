@@ -21,6 +21,10 @@ else
         <div class="navbar-actions" style="display: flex; gap: 10px;">
             @if (Session.IsLoggedIn)
             {
+                @if (Session.IsAdmin)
+                {
+                    <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/add">Admin</NavLink>
+                }
                 <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
                     🛒 Košík (@CartService.GetCartCount())
                 </NavLink>
@@ -33,12 +37,6 @@ else
                         <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
                         <li><NavLink class="dropdown-item" href="/profile">🛠 Upravit profil</NavLink></li>
                         <li><NavLink class="dropdown-item" href="/credits">💳 Dobít kredity</NavLink></li>
-
-                        @if (Session.IsAdmin)
-                        {
-                            <li><NavLink class="dropdown-item" href="/add">➕ Přidej produkt</NavLink></li>
-                        }
-
                         <li><a href="#" class="dropdown-item" @onclick="Logout">🚪 Odhlásit se</a></li>
                     </ul>
                 </div>

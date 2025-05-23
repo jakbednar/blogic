@@ -21,6 +21,12 @@
         @successMessage
     </div>
 }
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" style="margin-bottom: 20px; color: red; font-weight: bold;">
+        @errorMessage
+    </div>
+}
 
 <div style="padding: 30px; max-width: 900px; margin: auto;">
     @if (_cart.Any())
@@ -73,6 +79,8 @@
 @code {
     private List<CartItem> _cart = new();
     private string? successMessage = null;
+    private string? errorMessage = null;
+
 
     protected override void OnInitialized()
     {
@@ -99,9 +107,32 @@
     
     private async Task PlaceOrder()
     {
+        var user = Session.CurrentUser;
+        int totalPrice = _cart.Sum(p => p.Product.Price * p.Quantity);
+
+        if (user is null)
+        {
+            errorMessage = "❌ Přihlášení selhalo.";
+            StateHasChanged();
+            await Task.Delay(5000);
+            errorMessage = null;
+            StateHasChanged();
+            return;
+        }
+
+        if (user.Credit < totalPrice)
+        {
+            errorMessage = $"❌ Nedostatečný kredit. Chybí ti {totalPrice - user.Credit} Kč.";
+            StateHasChanged();
+            await Task.Delay(5000);
+            errorMessage = null;
+            StateHasChanged();
+            return;
+        }
+        
         var orderId = Db.ExecuteScalar<int>(
             "INSERT INTO OrderGroups (UserId) VALUES (@UserId); SELECT last_insert_rowid();",
-            new { UserId = Session.CurrentUser!.UserId }
+            new { UserId = user.UserId }
         );
 
         foreach (var item in _cart)
@@ -118,6 +149,14 @@
                 });
         }
 
+        Db.Execute("UPDATE Users SET Credit = Credit - @Amount WHERE UserId = @UserId", new
+        {
+            Amount = totalPrice,
+            UserId = user.UserId
+        });
+
+        Session.CurrentUser!.Credit -= totalPrice;
+
         CartService.ClearCart();
         _cart = new();
         successMessage = "✅ Objednávka byla úspěšně odeslána.";
@@ -127,5 +166,4 @@
         successMessage = null;
         StateHasChanged();
     }
-
 }
