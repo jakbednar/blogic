@@ -19,12 +19,12 @@ else
         </NavLink>
 
         <div class="navbar-actions" style="display: flex; gap: 10px;">
-            <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
-                🛒 Košík (@CartService.GetCartCount())
-            </NavLink>
-
             @if (Session.IsLoggedIn)
             {
+                <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
+                    🛒 Košík (@CartService.GetCartCount())
+                </NavLink>
+                
                 <div class="user-dropdown-hover">
                     <div class="user-trigger">
                         👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč
