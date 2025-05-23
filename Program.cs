@@ -2,6 +2,7 @@ using blogic.Components;
 using blogic.Services;
 using blogic.Data;
 using System.Data;
+using Blazored.LocalStorage;
 using Microsoft.Data.Sqlite; // přidáš pro Sqlite
 
 
@@ -22,6 +23,8 @@ public class Program
         builder.Services.AddScoped<CartService>();
         builder.Services.AddScoped<UserSessionService>();
         builder.Services.AddScoped<UserService>();
+        
+        builder.Services.AddBlazoredLocalStorage();
 
         // DB připojení (nezapomeň složku + soubor!)
         builder.Services.AddScoped<IDbConnection>(sp =>
