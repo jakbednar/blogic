@@ -4,6 +4,7 @@
 @using blogic.Services
 @inject UserSessionService Session
 @inject ProductService ProductService
+@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>Správa produktů</PageTitle>
 
@@ -21,13 +22,61 @@
     }
     else
     {
-        <h3>Přidat nový produkt</h3>
-        <div class="form-row" style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <input placeholder="Název produktu" @bind="_newName" />
-            <input placeholder="Cena (Kč)" type="number" @bind="_newPrice" />
-            <input placeholder="Množství" type="number" @bind="_newQuantity" />
-            <input placeholder="URL obrázku" @bind="_newImageUrl" />
-            <button class="add-button" @onclick="AddProduct">Přidat</button>
+        <div class="add-product-box">
+            <h3>Přidat nový produkt</h3>
+
+            <!-- First Row: Název, Cena, Množství -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Název produktu</label>
+                    <input id="name" class="form-control" @bind="_newName" placeholder="Název produktu" />
+                </div>
+                <div class="form-group">
+                    <label for="price">Cena (Kč)</label>
+                    <input id="price" class="form-control" type="number" min="1" @bind="_newPrice" />
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Množství</label>
+                    <input id="quantity" class="form-control" type="number" min="1" @bind="_newQuantity" />
+                </div>
+            </div>
+
+            <!-- Second Row: Obrázek -->
+            <div class="form-row align-items-end">
+                <div class="form-group">
+                    <label>Obrázek</label>
+                    <div class="image-input-toggle">
+                        <button type="button" class="tab-button @(useFileUpload ? "" : "active")" @onclick="() => useFileUpload = false">URL</button>
+                        <button type="button" class="tab-button @(useFileUpload ? "active" : "")" @onclick="() => useFileUpload = true">Soubor</button>
+                    </div>
+                    @if (!useFileUpload)
+                    {
+                        <input class="form-control" placeholder="URL obrázku" @bind="_newImageUrl" @oninput="PreviewImage" />
+                    }
+                    else
+                    {
+                        <div class="drop-zone">
+                            <InputFile OnChange="HandleFileUpload" />
+                        </div>
+                    }
+                </div>
+
+                <div class="preview-image">
+                    @if (!string.IsNullOrWhiteSpace(_newImageUrl))
+                    {
+                        <img src="@_newImageUrl" alt="Náhled" />
+                    }
+                    else
+                    {
+                        <span>🖼️ Náhled se zobrazí zde</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Third Row: Button -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="add-button" @onclick="AddProduct">➕ Přidat produkt</button>
+            </div>
         </div>
 
         <table class="cart-table">
@@ -100,6 +149,7 @@
     private int _newPrice;
     private int _newQuantity;
     private string _newImageUrl = string.Empty;
+    private bool useFileUpload = false;
 
     private int? _editingProductId;
     private Product _editModel = new();
@@ -180,5 +230,26 @@
 
         _editingProductId = null;
         _editModel = new Product();
+    }
+
+    private void PreviewImage(ChangeEventArgs e)
+    {
+        _newImageUrl = e.Value?.ToString() ?? "";
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream(10_000_000);
+            var buffer = new byte[file.Size];
+            await stream.ReadAsync(buffer);
+
+            var base64 = Convert.ToBase64String(buffer);
+            var mime = file.ContentType;
+            _newImageUrl = $"data:{mime};base64,{base64}";
+        }
     }
 }
