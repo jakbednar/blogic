@@ -18,6 +18,11 @@ public class UserService
         var existing = _db.QueryFirstOrDefault<User>("SELECT * FROM Users WHERE Email = @Email", new { user.Email });
         if (existing != null) return false;
 
+        if (string.IsNullOrWhiteSpace(user.ImageUrl))
+        {
+            user.ImageUrl = "/images/user.png";
+        }
+
         string hash = BCrypt.Net.BCrypt.HashPassword(user.Password);
         user.Password = hash;
 
@@ -28,6 +33,7 @@ public class UserService
 
         return true;
     }
+
 
     public User? Login(string email, string password)
     {
@@ -44,4 +50,11 @@ public class UserService
         var users = await _db.QueryAsync<User>(sql);
         return users.ToList();
     }
+    
+    public async Task<User?> GetUserById(int userId)
+    {
+        var sql = "SELECT * FROM Users WHERE UserId = @UserId";
+        return await _db.QueryFirstOrDefaultAsync<User>(sql, new { UserId = userId });
+    }
+
 }

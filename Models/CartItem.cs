@@ -8,5 +8,5 @@ public class CartItem
     public int Quantity { get; set; }
     public int Id { get; set; }
 
-    public Product? Product { get; set; }  // volitelně pro napojení detailů
+    public Product? Product { get; set; } 
 }
