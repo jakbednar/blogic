@@ -15,10 +15,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Inicializuj databázi
         Database.InitDb();
 
-        // Registrace služeb
         builder.Services.AddScoped<ProductService>();
         builder.Services.AddScoped<CartService>();
         builder.Services.AddScoped<UserSessionService>();
@@ -26,7 +24,6 @@ public class Program
         
         builder.Services.AddBlazoredLocalStorage();
 
-        // DB připojení (nezapomeň složku + soubor!)
         builder.Services.AddScoped<IDbConnection>(sp =>
             new SqliteConnection("Data Source=Data/DutyFree.db"));
 
@@ -34,14 +31,18 @@ public class Program
             .AddInteractiveServerComponents();
 
         var app = builder.Build();
-
+        
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Error");
             app.UseHsts();
         }
-
+        
         app.UseHttpsRedirection();
+        
+        app.UseStaticFiles();
+        app.UseRouting();
+
         app.UseAntiforgery();
 
         app.MapStaticAssets();

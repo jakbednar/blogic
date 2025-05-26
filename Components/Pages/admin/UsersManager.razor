@@ -1,0 +1,55 @@
+@page "/admin/users"
+@rendermode InteractiveServer
+@using blogic.Models
+@using blogic.Services
+@inject UserSessionService Session
+@inject UserService UserService
+<PageTitle>Správa uživatelů</PageTitle>
+
+<h2>Seznam uživatelů</h2>
+
+@if (users == null)
+{
+    <p>Načítám uživatele...</p>
+}
+else if (!users.Any())
+{
+    <p>Žádní uživatelé nejsou zaregistrovaní.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Jméno</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>IMG</th>
+            <th>Kredit</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in users)
+        {
+            <tr>
+                <td>@user.UserId</td>
+                <td>@user.Name</td>
+                <td>@user.Email</td>
+                <td>@user.Role</td>
+                <td>@user.ImageUrl </td>
+                <td>@user.Credit</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<User>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserService.GetAllUsers();
+    }
+}
