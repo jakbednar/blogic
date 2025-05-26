@@ -7,14 +7,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Images\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
       <PackageReference Include="Dapper" Version="2.1.66" />
       <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\images\85909250_350x350@2x.webp" />
+      <None Include="wwwroot\images\shopping-2.jpeg" />
+      <None Include="wwwroot\images\shopping-3.jpeg" />
+      <None Include="wwwroot\images\shopping-4.jpeg" />
+      <None Include="wwwroot\images\shopping.jpeg" />
+      <None Include="wwwroot\images\user.png" />
+      <None Include="wwwroot\uploads\user.png" />
     </ItemGroup>
 
 </Project>

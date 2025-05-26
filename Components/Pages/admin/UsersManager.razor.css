@@ -1,0 +1,50 @@
+table.table {
+    width: 90%;
+    margin: 2rem auto;
+    border-collapse: collapse;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+table.table thead {
+    background: #f5f5f5;
+}
+
+table.table th, table.table td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+table.table th {
+    color: #333;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+table.table tbody tr:hover {
+    background-color: #fdf4e3;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+table.table td img.profile-image {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+table.table td {
+    color: #555;
+    font-size: 0.95rem;
+}
+
+table.table td:first-child {
+    font-weight: bold;
+    color: #222;
+}

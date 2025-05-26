@@ -4,6 +4,7 @@
 @using blogic.Services
 @inject UserSessionService Session
 @inject UserService UserService
+@inject NavigationManager Navigation
 <PageTitle>Správa uživatelů</PageTitle>
 
 <h2>Seznam uživatelů</h2>
@@ -22,23 +23,23 @@ else
         <thead>
         <tr>
             <th>ID</th>
+            <th>Profilovka</th>
             <th>Jméno</th>
             <th>Email</th>
             <th>Role</th>
-            <th>IMG</th>
             <th>Kredit</th>
         </tr>
         </thead>
         <tbody>
         @foreach (var user in users)
         {
-            <tr>
+            <tr @onclick="() => NavigateToUser(user.UserId)">
                 <td>@user.UserId</td>
+                <td><img src="@user.ImageUrl" alt="@user.Name" class="profile-image" /></td>
                 <td>@user.Name</td>
                 <td>@user.Email</td>
                 <td>@user.Role</td>
-                <td>@user.ImageUrl </td>
-                <td>@user.Credit</td>
+                <td>@user.Credit Kč</td>
             </tr>
         }
         </tbody>
@@ -51,5 +52,10 @@ else
     protected override async Task OnInitializedAsync()
     {
         users = await UserService.GetAllUsers();
+    }
+
+    private void NavigateToUser(int userId)
+    {
+        Navigation.NavigateTo($"/admin/users/{userId}");
     }
 }

@@ -21,6 +21,7 @@ public class Program
         builder.Services.AddScoped<CartService>();
         builder.Services.AddScoped<UserSessionService>();
         builder.Services.AddScoped<UserService>();
+        builder.Services.AddScoped<OrderService>();
         
         builder.Services.AddBlazoredLocalStorage();
 

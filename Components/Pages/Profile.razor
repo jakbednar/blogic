@@ -4,6 +4,7 @@
 @using Dapper
 @using blogic.Data
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
 
 <h2>🛠 Můj profil</h2>
 
@@ -13,27 +14,35 @@
 }
 else
 {
-    <EditForm Model="@_model" OnValidSubmit="SaveChanges">
+    <EditForm Model="@_model" OnValidSubmit="SaveChanges" class="profile-container">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
-            <label>Jméno</label>
-            <InputText class="form-control" @bind-Value="_model.Name" />
+        <div class="profile-image-section">
+            <label class="profile-pic-wrapper">
+                <img src="@_model.ImageUrl" alt="Profilová fotka" class="profile-pic" />
+                <InputFile OnChange="HandleFileUpload" class="hidden-file" />
+            </label>
         </div>
 
-        <div class="mb-3">
-            <label>Email</label>
-            <InputText class="form-control" @bind-Value="_model.Email" />
-        </div>
+        <div class="profile-fields">
+            <div class="field-group">
+                <label>Jméno</label>
+                <InputText class="form-control" @bind-Value="_model.Name" />
+            </div>
 
-        <hr />
-        <div class="mb-3">
-            <label>Nové heslo <span class="text-muted">(nepovinné)</span></label>
-            <InputText type="password" class="form-control" @bind-Value="_model.NewPassword" />
-        </div>
+            <div class="field-group">
+                <label>Email</label>
+                <InputText class="form-control" @bind-Value="_model.Email" />
+            </div>
 
-        <button class="btn btn-success">💾 Uložit změny</button>
+            <div class="field-group">
+                <label>Nové heslo <span class="text-muted">(nepovinné)</span></label>
+                <InputText type="password" class="form-control" @bind-Value="_model.NewPassword" />
+            </div>
+
+            <button class="btn-save">💾 Uložit změny</button>
+        </div>
     </EditForm>
 
     @if (!string.IsNullOrWhiteSpace(_message))
@@ -54,7 +63,30 @@ else
             {
                 Name = Session.CurrentUser.Name,
                 Email = Session.CurrentUser.Email,
+                ImageUrl = Session.CurrentUser.ImageUrl ?? "/uploads/user.png"
             };
+        }
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsPath))
+            {
+                Directory.CreateDirectory(uploadsPath);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
+            var filePath = Path.Combine(uploadsPath, uniqueFileName);
+
+            using var fs = new FileStream(filePath, FileMode.Create);
+            await file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(fs);
+
+            _model.ImageUrl = $"/uploads/{uniqueFileName}";
+            StateHasChanged();
         }
     }
 
@@ -68,14 +100,14 @@ else
             passwordHash = BCrypt.Net.BCrypt.HashPassword(_model.NewPassword);
         }
 
-        db.Execute("UPDATE Users SET Name=@Name, Email=@Email, Phone=@Phone"
+        db.Execute("UPDATE Users SET Name=@Name, Email=@Email, ImageUrl=@ImageUrl"
                  + (passwordHash != null ? ", PasswordHash=@PasswordHash" : "")
                  + " WHERE UserId=@UserId",
             new
             {
                 _model.Name,
                 _model.Email,
-                _model.Phone,
+                _model.ImageUrl,
                 PasswordHash = passwordHash,
                 Session.CurrentUser!.UserId
             });
@@ -87,7 +119,7 @@ else
     {
         [Required] public string Name { get; set; } = "";
         [Required] public string Email { get; set; } = "";
-        public string Phone { get; set; } = "";
         public string NewPassword { get; set; } = "";
+        public string ImageUrl { get; set; } = "/uploads/user.png";
     }
 }

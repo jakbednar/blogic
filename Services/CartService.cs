@@ -146,4 +146,27 @@ public class CartService
             "SELECT IFNULL(SUM(Quantity), 0) FROM CartItems WHERE UserId = @UserId",
             new { UserId = _session.CurrentUser!.UserId });
     }
+    
+    public List<CartItem> GetCartByUserId(int userId)
+    {
+        var sql = @"
+        SELECT c.Id, c.UserId, c.ProductId, c.Quantity,
+               p.ProductId, p.Name, p.Price, p.Quantity AS ProductQuantity, p.ImageUrl, p.IsDeleted, p.DateCreated, p.CreatedBy
+        FROM CartItems c
+        JOIN Products p ON p.ProductId = c.ProductId
+        WHERE c.UserId = @UserId";
+
+        var items = _db.Query<CartItem, Product, CartItem>(
+            sql,
+            (cart, product) =>
+            {
+                cart.Product = product;
+                return cart;
+            },
+            new { UserId = userId },
+            splitOn: "ProductId"
+        ).ToList();
+
+        return items;
+    }
 }
