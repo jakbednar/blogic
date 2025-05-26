@@ -21,25 +21,30 @@ else
         <div class="navbar-actions" style="display: flex; gap: 10px;">
             @if (Session.IsLoggedIn)
             {
-                @if (Session.IsAdmin)
-                {
-                    <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/add">Admin</NavLink>
-                }
                 <NavLink class="btn" style="background-color: orange; color: white; padding: 8px 16px; border-radius: 20px;" href="/cart">
                     🛒 Košík (@CartService.GetCartCount())
                 </NavLink>
                 
                 <div class="user-dropdown-hover">
-                    <div class="user-trigger">
-                        👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč
-                    </div>
+                    <div class="user-trigger">👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč</div>
+
                     <ul class="dropdown-menu">
-                        <li><NavLink class="dropdown-item" href="/orders">🧾 Objednávky</NavLink></li>
-                        <li><NavLink class="dropdown-item" href="/profile">🛠 Upravit profil</NavLink></li>
-                        <li><NavLink class="dropdown-item" href="/credits">💳 Dobít kredity</NavLink></li>
-                        <li><a href="#" class="dropdown-item" @onclick="Logout">🚪 Odhlásit se</a></li>
+                        <li class="has-submenu">
+                            <a class="dropdown-item" href="#">⚙️ Admin</a>
+                            <ul class="submenu-left">
+                                <li><NavLink class="dropdown-item" href="/admin/users">Správa uživatelů</NavLink></li>
+                                <li><NavLink class="dropdown-item" href="/admin/orders">Správa objednávek</NavLink></li>
+                                <li><NavLink class="dropdown-item" href="/admin/products">Správa produktů</NavLink></li>
+                            </ul>
+                        </li>
+                        <li><NavLink class="dropdown-item" href="/orders">📦 Moje objednávky</NavLink></li>
+                        <li><NavLink class="dropdown-item" href="/profile">🙋 Profil</NavLink></li>
+                        <li><NavLink class="dropdown-item" href="/credits">💳 Kredity</NavLink></li>
+                        <li><a class="dropdown-item" href="#" @onclick="Logout">🚪 Odhlásit se</a></li>
                     </ul>
                 </div>
+
+
             }
             else
             {

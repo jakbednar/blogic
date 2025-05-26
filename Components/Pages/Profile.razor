@@ -27,11 +27,6 @@ else
             <InputText class="form-control" @bind-Value="_model.Email" />
         </div>
 
-        <div class="mb-3">
-            <label>Telefon</label>
-            <InputText class="form-control" @bind-Value="_model.Phone" />
-        </div>
-
         <hr />
         <div class="mb-3">
             <label>Nové heslo <span class="text-muted">(nepovinné)</span></label>
@@ -59,7 +54,6 @@ else
             {
                 Name = Session.CurrentUser.Name,
                 Email = Session.CurrentUser.Email,
-                Phone = Session.CurrentUser.Phone ?? ""
             };
         }
     }

@@ -37,4 +37,11 @@ public class UserService
         bool valid = BCrypt.Net.BCrypt.Verify(password, user.Password);
         return valid ? user : null;
     }
+    
+    public async Task<List<User>> GetAllUsers()
+    {
+        var sql = "SELECT * FROM Users";
+        var users = await _db.QueryAsync<User>(sql);
+        return users.ToList();
+    }
 }

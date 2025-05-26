@@ -7,7 +7,6 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public string Role { get; set; } = "User";
-    public string? Phone { get; set; }
     public string? ImageUrl { get; set; }
     public decimal Credit { get; set; } = 0;
 }
