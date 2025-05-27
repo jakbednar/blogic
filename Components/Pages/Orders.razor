@@ -9,7 +9,7 @@
 
 @if (!Session.IsLoggedIn)
 {
-    <p style="text-align:center; margin-top: 100px;">🔒 Musíš být přihlášen.</p>
+    <AuthAlert />
 }
 else if (groupedOrders == null || !groupedOrders.Any())
 {
@@ -32,6 +32,8 @@ else
 }
 
 @code {
+    // Scoped code block
+
     private List<OrderGroupView> groupedOrders = new();
 
     protected override void OnInitialized()

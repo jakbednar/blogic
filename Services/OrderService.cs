@@ -8,11 +8,13 @@ public class OrderService
 {
     private readonly IDbConnection _db;
 
+    // OrderService method
     public OrderService(IDbConnection db)
     {
         _db = db;
     }
 
+    // GetOrdersByUserId method
     public async Task<List<OrderGroupView>> GetOrdersByUserId(int userId)
     {
         var raw = (await _db.QueryAsync<OrderFlat>(
@@ -56,6 +58,7 @@ public class OrderGroupView
 {
     public int OrderId { get; set; }
     public string DateCreated { get; set; } = "";
+    // new method
     public List<OrderItemView> Items { get; set; } = new();
 }
 

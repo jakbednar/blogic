@@ -11,6 +11,7 @@ namespace blogic;
 public class Program
 {
     
+    // Main method
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

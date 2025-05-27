@@ -8,11 +8,13 @@ public class UserService
 {
     private readonly IDbConnection _db;
 
+    // UserService method
     public UserService(IDbConnection db)
     {
         _db = db;
     }
 
+    // Register method
     public bool Register(User user)
     {
         var existing = _db.QueryFirstOrDefault<User>("SELECT * FROM Users WHERE Email = @Email", new { user.Email });
@@ -35,6 +37,7 @@ public class UserService
     }
 
 
+    // Login method
     public User? Login(string email, string password)
     {
         var user = _db.QueryFirstOrDefault<User>("SELECT * FROM Users WHERE Email = @Email", new { Email = email });
@@ -44,6 +47,7 @@ public class UserService
         return valid ? user : null;
     }
     
+    // GetAllUsers method
     public async Task<List<User>> GetAllUsers()
     {
         var sql = "SELECT * FROM Users";
@@ -51,6 +55,7 @@ public class UserService
         return users.ToList();
     }
     
+    // GetUserById method
     public async Task<User?> GetUserById(int userId)
     {
         var sql = "SELECT * FROM Users WHERE UserId = @UserId";

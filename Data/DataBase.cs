@@ -9,8 +9,10 @@ public static class Database
 {
     private static string _connectionString = "Data Source=Data/DutyFree.db";
 
+    // Get method
     public static IDbConnection Get() => new SqliteConnection(_connectionString);
 
+    // InitDb method
     public static void InitDb()
 {
     using var db = Get();
