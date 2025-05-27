@@ -14,11 +14,13 @@ public class UserSessionService
 
     public event Action? OnChange;
 
+    // UserSessionService method
     public UserSessionService(ILocalStorageService localStorage)
     {
         _localStorage = localStorage;
     }
 
+    // Login method
     public async Task Login(User user)
     {
         CurrentUser = user;
@@ -26,6 +28,7 @@ public class UserSessionService
         OnChange?.Invoke();
     }
 
+    // Logout method
     public async Task Logout()
     {
         CurrentUser = null;
@@ -36,24 +39,29 @@ public class UserSessionService
     public bool IsLoggedIn => CurrentUser != null;
     public bool IsAdmin => CurrentUser?.Role == "Admin";
 
+    // SetFlashMessage method
     public void SetFlashMessage(string message)
     {
         FlashMessage = message;
     }
 
+    // GetFlashMessage method
     public string? GetFlashMessage() => FlashMessage;
 
+    // ClearFlashMessage method
     public void ClearFlashMessage()
     {
         FlashMessage = null;
     }
 
+    // Refresh method
     public void Refresh(User user)
     {
         CurrentUser = user;
         OnChange?.Invoke();
     }
 
+    // TryRestoreSession method
     public async Task TryRestoreSession(IDbConnection db)
     {
         var userId = await _localStorage.GetItemAsync<int?>("userId");

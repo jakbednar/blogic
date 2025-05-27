@@ -1,0 +1,9 @@
+@using blogic.Services
+@inject UserSessionService Session
+
+@if (!Session.IsLoggedIn)
+{
+    <div class="alert alert-warning mt-3">
+        Pro zobrazení této stránky se musíš přihlásit.
+    </div>
+}

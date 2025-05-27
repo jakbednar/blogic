@@ -28,11 +28,17 @@
     </div>
 }
 
-<div style="padding: 30px; max-width: 900px; margin: auto;">
-    @if (_cart.Any())
-    {
-        <table class="cart-table">
-            <thead>
+@if (!Session.IsLoggedIn)
+{
+    <AuthAlert />
+}
+else
+{
+    <div style="padding: 30px; max-width: 900px; margin: auto;">
+        @if (_cart.Any())
+        {
+            <table class="cart-table">
+                <thead>
                 <tr>
                     <th>Produkt</th>
                     <th>Cena / ks</th>
@@ -40,8 +46,8 @@
                     <th>Množství</th>
                     <th>Akce</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 @foreach (var item in _cart)
                 {
                     <tr>
@@ -63,18 +69,19 @@
                         </td>
                     </tr>
                 }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
 
-        <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Product.Price * p.Quantity) Kč</p>
+            <p class="cart-total">Cena celkem: @_cart.Sum(p => p.Product.Price * p.Quantity) Kč</p>
 
-        <button class="export-button" @onclick="PlaceOrder">Objednat</button>
-    }
-    else
-    {
-        <p>Košík je prázdný.</p>
-    }
-</div>
+            <button class="export-button" @onclick="PlaceOrder">Objednat</button>
+        }
+        else
+        {
+            <p>Košík je prázdný.</p>
+        }
+    </div>
+}
 
 @code {
     private List<CartItem> _cart = new();

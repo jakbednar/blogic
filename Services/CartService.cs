@@ -11,14 +11,17 @@ public class CartService
 
     public event Action? OnChange;
 
+    // CartService method
     public CartService(IDbConnection db, UserSessionService session)
     {
         _db = db;
         _session = session;
     }
 
+    // NotifyStateChanged method
     private void NotifyStateChanged() => OnChange?.Invoke();
 
+    // GetCartItems method
     public List<CartItem> GetCartItems()
     {
         if (!_session.IsLoggedIn) return new();
@@ -44,6 +47,7 @@ public class CartService
         return items;
     }
 
+    // AddToCart method
     public void AddToCart(int productId)
     {
         if (!_session.IsLoggedIn) return;
@@ -65,6 +69,7 @@ public class CartService
         NotifyStateChanged();
     }
 
+    // RemoveProduct method
     public void RemoveProduct(int productId)
     {
         if (!_session.IsLoggedIn) return;
@@ -75,6 +80,7 @@ public class CartService
         NotifyStateChanged();
     }
 
+    // IncreaseQuantity method
     public void IncreaseQuantity(int productId)
     {
         if (!_session.IsLoggedIn) return;
@@ -105,6 +111,7 @@ public class CartService
         }
     }
 
+    // DecreaseQuantity method
     public void DecreaseQuantity(int productId)
     {
         if (!_session.IsLoggedIn) return;
@@ -128,6 +135,7 @@ public class CartService
         }
     }
 
+    // ClearCart method
     public void ClearCart()
     {
         if (!_session.IsLoggedIn) return;
@@ -138,6 +146,7 @@ public class CartService
         NotifyStateChanged();
     }
 
+    // GetCartCount method
     public int GetCartCount()
     {
         if (!_session.IsLoggedIn) return 0;
@@ -147,6 +156,7 @@ public class CartService
             new { UserId = _session.CurrentUser!.UserId });
     }
     
+    // GetCartByUserId method
     public List<CartItem> GetCartByUserId(int userId)
     {
         var sql = @"
