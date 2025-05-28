@@ -1,0 +1,77 @@
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.order-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.order-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: pointer;
+}
+.order-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.order-date {
+    font-size: 0.9rem;
+    color: #666666;
+}
+.order-user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.order-user img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    object-fit: cover;
+}
+.user-info .user-name {
+    font-size: 1rem;
+    font-weight: 500;
+}
+.user-info .user-email {
+    font-size: 0.85rem;
+    color: #888888;
+}
+.order-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #444444;
+    margin-bottom: 0.75rem;
+}
+.order-items {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0.75rem;
+    border-top: 1px solid #f0f0f0;
+}
+.order-items li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+    color: #333333;
+}
+.order-total {
+    text-align: right;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222222;
+}

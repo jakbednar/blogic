@@ -1,8 +1,68 @@
 @page "/admin/orders"
-<h3>OrdersManager</h3>
+@rendermode InteractiveServer
+@using blogic.Models
+@using blogic.Services
+@inject UserSessionService Session
+@inject OrderService OrderService
+@inject NavigationManager Navigation
+
+<PageTitle>Správa objednávek</PageTitle>
+
+@if (!Session.IsAdmin)
+{
+<h2>Stránka nenalezena.</h2>
+}
+else if (orders == null)
+{
+<p>Načítávám objednávky…</p>
+}
+else if (!orders.Any())
+{
+<p>Žádné objednávky.</p>
+}
+else
+{
+<div class="orders-grid">
+    @foreach (var order in orders)
+    {
+    <div class="order-card" @onclick="() => NavigateToUser(order.User.UserId)">
+        <div class="order-header">
+            🧾 Objednávka #@order.OrderId <span class="order-date">(@order.DateCreated)</span>
+        </div>
+        <div class="order-user">
+            <img src="@order.User.ImageUrl" alt="Profilovka" />
+            <div class="user-info">
+                <div class="user-name">@order.User.Name</div>
+                <div class="user-email">@order.User.Email</div>
+            </div>
+        </div>
+        <div class="order-details">
+            <div>Role: <strong>@order.User.Role</strong></div>
+            <div>Kredit: <strong>@order.User.Credit Kč</strong></div>
+            <div>Položek: <strong>@order.Items.Count</strong></div>
+        </div>
+        <ul class="order-items">
+            @foreach (var item in order.Items)
+            {
+            <li>
+                📦 <strong>@item.ProductName</strong> — @item.Quantity ks — @($"{item.Quantity * item.Price} Kč")
+            </li>
+            }
+        </ul>
+        <div class="order-total">Celkem: <strong>@order.Items.Sum(i => i.Quantity * i.Price) Kč</strong></div>
+    </div>
+    }
+</div>
+}
 
 @code {
-    // Scoped code block
+private List<OrderWithUserView>? orders;
 
-    
+protected override async Task OnInitializedAsync()
+{
+orders = await OrderService.GetAllOrdersWithUserAsync();
+}
+
+private void NavigateToUser(int userId)
+=> Navigation.NavigateTo($"/admin/users/{userId}");
 }

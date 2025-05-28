@@ -29,14 +29,17 @@ else
                     <div class="user-trigger">👤 @Session.CurrentUser?.Name | @Session.CurrentUser?.Credit Kč</div>
 
                     <ul class="dropdown-menu">
-                        <li class="has-submenu">
-                            <a class="dropdown-item" href="#">⚙️ Admin</a>
-                            <ul class="submenu-left">
-                                <li><NavLink class="dropdown-item" href="/admin/users">Správa uživatelů</NavLink></li>
-                                <li><NavLink class="dropdown-item" href="/admin/orders">Správa objednávek</NavLink></li>
-                                <li><NavLink class="dropdown-item" href="/admin/products">Správa produktů</NavLink></li>
-                            </ul>
-                        </li>
+                        @if (Session.IsAdmin)
+                        {
+                            <li class="has-submenu">
+                                <a class="dropdown-item" href="#">⚙️ Admin</a>
+                                <ul class="submenu-left">
+                                    <li><NavLink class="dropdown-item" href="/admin/users">Správa uživatelů</NavLink></li>
+                                    <li><NavLink class="dropdown-item" href="/admin/orders">Správa objednávek</NavLink></li>
+                                    <li><NavLink class="dropdown-item" href="/admin/products">Správa produktů</NavLink></li>
+                                </ul>
+                            </li>
+                        }
                         <li><NavLink class="dropdown-item" href="/orders">📦 Moje objednávky</NavLink></li>
                         <li><NavLink class="dropdown-item" href="/profile">🙋 Profil</NavLink></li>
                         <li><NavLink class="dropdown-item" href="/credits">💳 Kredity</NavLink></li>
