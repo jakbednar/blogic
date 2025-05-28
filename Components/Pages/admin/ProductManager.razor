@@ -2,30 +2,27 @@
 @rendermode InteractiveServer
 @using blogic.Models
 @using blogic.Services
+@using Microsoft.AspNetCore.Components.Forms
 @inject UserSessionService Session
 @inject ProductService ProductService
-@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
 
 <PageTitle>Správa produktů</PageTitle>
 
-<header style="background-image: url('https://images.unsplash.com/photo-1559561854-266fba0e52c6'); background-size: cover; background-position: center; height: 200px; display: flex; align-items: center; justify-content: center; color: black; font-size: 2rem; font-weight: bold;">
+<header class="page-header">
     Správa produktů
 </header>
 
-<div style="padding: 30px; max-width: 900px; margin: auto;">
-    @if (!Session.IsLoggedIn || !Session.IsAdmin)
+<div class="page-content">
+    @if (!Session.IsAdmin)
     {
-        <div class="alert alert-danger text-center mt-5">
-            Přístup pouze pro administrátory.<br />
-            <a href="/login">Přihlaste se</a> nebo se vraťte na <a href="/">domovskou stránku</a>.
-        </div>
+        <h2>Stránka nenalezena.</h2>
     }
     else
     {
         <div class="add-product-box">
             <h3>Přidat nový produkt</h3>
 
-            <!-- First Row: Název, Cena, Množství -->
             <div class="form-row">
                 <div class="form-group">
                     <label for="name">Název produktu</label>
@@ -41,13 +38,20 @@
                 </div>
             </div>
 
-            <!-- Second Row: Obrázek -->
-            <div class="form-row align-items-end">
-                <div class="form-group">
+            <div class="form-row">
+                <div class="form-group image-group">
                     <label>Obrázek</label>
                     <div class="image-input-toggle">
-                        <button type="button" class="tab-button @(useFileUpload ? "" : "active")" @onclick="() => useFileUpload = false">URL</button>
-                        <button type="button" class="tab-button @(useFileUpload ? "active" : "")" @onclick="() => useFileUpload = true">Soubor</button>
+                        <button type="button"
+                                class="tab-button @(useFileUpload ? "" : "active")"
+                                @onclick="() => useFileUpload = false">
+                            URL
+                        </button>
+                        <button type="button"
+                                class="tab-button @(useFileUpload ? "active" : "")"
+                                @onclick="() => useFileUpload = true">
+                            Soubor
+                        </button>
                     </div>
                     @if (!useFileUpload)
                     {
@@ -60,7 +64,6 @@
                         </div>
                     }
                 </div>
-
                 <div class="preview-image">
                     @if (!string.IsNullOrWhiteSpace(_newImageUrl))
                     {
@@ -73,13 +76,12 @@
                 </div>
             </div>
 
-            <!-- Third Row: Button -->
-            <div style="text-align: center; margin-top: 20px;">
+            <div class="form-actions">
                 <button class="add-button" @onclick="AddProduct">➕ Přidat produkt</button>
             </div>
         </div>
 
-        <table class="cart-table">
+        <table class="products-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -95,10 +97,10 @@
                     <tr>
                         <td>@item.ProductID</td>
                         <td class="product-info">
-                            <img src="@item.ImageUrl" alt="@item.Name" class="cart-img" />
+                            <img src="@item.ImageUrl" alt="@item.Name" class="product-img" />
                             @if (_editingProductId == item.ProductID)
                             {
-                                <input type="text" @bind="_editModel.Name" />
+                                <input type="text" class="form-control" @bind="_editModel.Name" />
                             }
                             else
                             {
@@ -108,7 +110,7 @@
                         <td>
                             @if (_editingProductId == item.ProductID)
                             {
-                                <input type="number" @bind="_editModel.Price" class="small-input" />
+                                <input type="number" class="small-input" @bind="_editModel.Price" />
                             }
                             else
                             {
@@ -118,7 +120,7 @@
                         <td>
                             @if (_editingProductId == item.ProductID)
                             {
-                                <input type="number" @bind="_editModel.Quantity" class="small-input" />
+                                <input type="number" class="small-input" @bind="_editModel.Quantity" />
                             }
                             else
                             {
@@ -128,13 +130,25 @@
                         <td>
                             @if (_editingProductId == item.ProductID)
                             {
-                                <button class="action-button confirm-button" @onclick="() => ConfirmEdit(item.ProductID)">✅</button>
+                                <button class="action-button confirm-button"
+                                        @onclick="() => ConfirmEdit(item.ProductID)"
+                                        title="Potvrdit">
+                                    ✅
+                                </button>
                             }
                             else
                             {
-                                <button class="action-button edit-button" @onclick="() => EditProduct(item.ProductID)" title="Upravit">✏️</button>
+                                <button class="action-button edit-button"
+                                        @onclick="() => EditProduct(item.ProductID)"
+                                        title="Upravit">
+                                    ✏️
+                                </button>
                             }
-                            <button class="action-button delete-button" @onclick="() => RemoveProduct(item.ProductID)" title="Odstranit">❌</button>
+                            <button class="action-button delete-button"
+                                    @onclick="() => RemoveProduct(item.ProductID)"
+                                    title="Odstranit">
+                                ❌
+                            </button>
                         </td>
                     </tr>
                 }
@@ -144,8 +158,6 @@
 </div>
 
 @code {
-    // Scoped code block
-
     private List<Product> _products = new();
     private string _newName = string.Empty;
     private int _newPrice;
@@ -168,16 +180,16 @@
 
         var newProduct = new Product
         {
-            ProductID = ProductService.NextId(),
-            Name = _newName,
-            Price = _newPrice,
-            Quantity = _newQuantity,
-            ImageUrl = string.IsNullOrWhiteSpace(_newImageUrl)
-                ? "https://via.placeholder.com/50"
+            ProductID   = ProductService.NextId(),
+            Name        = _newName,
+            Price       = _newPrice,
+            Quantity    = _newQuantity,
+            ImageUrl    = string.IsNullOrWhiteSpace(_newImageUrl)
+                ? "https://via.placeholder.com/80"
                 : _newImageUrl,
             DateCreated = DateTime.UtcNow,
-            CreatedBy = Session.CurrentUser?.UserId ?? 1,
-            IsDeleted = false
+            CreatedBy   = Session.CurrentUser?.UserId ?? 1,
+            IsDeleted   = false
         };
 
         ProductService.AddProduct(newProduct);
@@ -189,46 +201,37 @@
         _newImageUrl = string.Empty;
     }
 
+
     private void RemoveProduct(int productId)
     {
         ProductService.RemoveProduct(productId);
-        var productToRemove = _products.FirstOrDefault(p => p.ProductID == productId);
-        if (productToRemove != null)
-        {
-            _products.Remove(productToRemove);
-        }
+        var toRemove = _products.FirstOrDefault(p => p.ProductID == productId);
+        if (toRemove != null)
+            _products.Remove(toRemove);
     }
 
     private void EditProduct(int productId)
     {
-        var product = _products.FirstOrDefault(p => p.ProductID == productId);
-        if (product != null)
+        var product = _products.First(p => p.ProductID == productId);
+        _editingProductId = productId;
+        _editModel = new Product
         {
-            _editingProductId = productId;
-
-            _editModel = new Product
-            {
-                ProductID = product.ProductID,
-                Name = product.Name,
-                Price = product.Price,
-                Quantity = product.Quantity,
-                ImageUrl = product.ImageUrl
-            };
-        }
+            ProductID = product.ProductID,
+            Name      = product.Name,
+            Price     = product.Price,
+            Quantity  = product.Quantity,
+            ImageUrl  = product.ImageUrl
+        };
     }
 
     private void ConfirmEdit(int productId)
     {
-        var product = _products.FirstOrDefault(p => p.ProductID == productId);
-        if (product != null)
-        {
-            product.Name = _editModel.Name;
-            product.Price = _editModel.Price;
-            product.Quantity = _editModel.Quantity;
-            product.ImageUrl = _editModel.ImageUrl;
-
-            ProductService.UpdateProduct(product);
-        }
+        var product = _products.First(p => p.ProductID == productId);
+        product.Name     = _editModel.Name;
+        product.Price    = _editModel.Price;
+        product.Quantity = _editModel.Quantity;
+        product.ImageUrl = _editModel.ImageUrl;
+        ProductService.UpdateProduct(product);
 
         _editingProductId = null;
         _editModel = new Product();
@@ -236,22 +239,19 @@
 
     private void PreviewImage(ChangeEventArgs e)
     {
-        _newImageUrl = e.Value?.ToString() ?? "";
+        _newImageUrl = e.Value?.ToString() ?? string.Empty;
     }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
         var file = e.File;
-
         if (file != null)
         {
             using var stream = file.OpenReadStream(10_000_000);
             var buffer = new byte[file.Size];
             await stream.ReadAsync(buffer);
-
             var base64 = Convert.ToBase64String(buffer);
-            var mime = file.ContentType;
-            _newImageUrl = $"data:{mime};base64,{base64}";
+            _newImageUrl = $"data:{file.ContentType};base64,{base64}";
         }
     }
 }

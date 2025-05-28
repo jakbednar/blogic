@@ -1,63 +1,105 @@
-@page "/admin/users"
+@page "/admin/users/{UserId:int}"
 @rendermode InteractiveServer
 @using blogic.Models
 @using blogic.Services
 @inject UserSessionService Session
 @inject UserService UserService
+@inject OrderService OrderService
+@inject CartService CartService
 @inject NavigationManager Navigation
-<PageTitle>Správa uživatelů</PageTitle>
 
-<h2>Seznam uživatelů</h2>
+<PageTitle>Detail uživatele</PageTitle>
 
-@if (users == null)
+@if (!Session.IsAdmin)
 {
-    <p>Načítám uživatele...</p>
+    <h2>Stránka nenalezena.</h2>
 }
-else if (!users.Any())
+else if (user == null)
 {
-    <p>Žádní uživatelé nejsou zaregistrovaní.</p>
+    <p class="loading">Načítám data uživatele...</p>
 }
 else
 {
-    <table class="table">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Profilovka</th>
-            <th>Jméno</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Kredit</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var user in users)
+    <div class="user-card">
+        <img src="@user.ImageUrl" alt="Profilovka" class="user-image" />
+
+        <div class="user-info">
+            <h2>@user.Name</h2>
+            <p><strong>Email:</strong> @user.Email</p>
+            <p><strong>Role:</strong> @user.Role</p>
+            <p><strong>Kredit:</strong> @user.Credit Kč</p>
+
+            <button class="back-button" onclick="history.back();">
+                ⬅️ Zpět
+            </button>
+        </div>
+    </div>
+
+    <section class="user-orders">
+        <h3>Objednávky uživatele</h3>
+        @if (orders != null && orders.Any())
         {
-            <tr @onclick="() => NavigateToUser(user.UserId)">
-                <td>@user.UserId</td>
-                <td><img src="@user.ImageUrl" alt="@user.Name" class="profile-image" /></td>
-                <td>@user.Name</td>
-                <td>@user.Email</td>
-                <td>@user.Role</td>
-                <td>@user.Credit Kč</td>
-            </tr>
+            @foreach (var order in orders)
+            {
+                <div class="order-container">
+                    <div class="order-header">
+                        🧾 Objednávka #@order.OrderId 
+                        <span class="order-date">(@order.DateCreated)</span>
+                    </div>
+
+                    <div class="order-products">
+                        @foreach (var item in order.Items)
+                        {
+                            <div class="product-item">
+                                <img src="@item.ImageUrl" alt="@item.ProductName" class="product-image" />
+                                <span class="product-name">@item.ProductName</span>
+                                <span class="product-quantity">@item.Quantity ks</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         }
-        </tbody>
-    </table>
+        else
+        {
+            <p>Žádné objednávky.</p>
+        }
+    </section>
+
+    <section class="user-cart">
+        <h3>Aktuální košík</h3>
+        @if (cartItems != null && cartItems.Any())
+        {
+            <div class="cart-products">
+                @foreach (var item in cartItems)
+                {
+                    <div class="product-item">
+                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="product-image" />
+                        <span class="product-name">@item.Product.Name</span>
+                        <span class="product-quantity">@item.Quantity ks</span>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Košík je prázdný.</p>
+        }
+    </section>
 }
 
 @code {
-    // Scoped code block
+    [Parameter]
+    public int UserId { get; set; }
 
-    private List<User>? users;
+    private User? user;
+    private List<OrderGroupView>? orders;
+    private List<CartItem>? cartItems;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        users = await UserService.GetAllUsers();
-    }
-
-    private void NavigateToUser(int userId)
-    {
-        Navigation.NavigateTo($"/admin/users/{userId}");
+        user = await UserService.GetUserById(UserId);
+        orders = await OrderService.GetOrdersByUserId(UserId);
+        cartItems = CartService.GetCartByUserId(UserId);
     }
 }
