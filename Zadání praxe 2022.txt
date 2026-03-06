@@ -1,0 +1,568 @@
+﻿DutyFree - praxe
+Funkční specifikace
+Verze 1.4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dokumentace pro:
+
+
+Business Logic s.r.o.
+Nad Stráněmi 5656, 760 05 Zlín
+
+
+IČ: 28308751
+DIČ: CZ28308751
+
+
+Dne: 15. 4. 2022
+	Předkládá:
+
+
+Business Logic s.r.o.
+Nad Stráněmi 5656
+760 05 Zlín
+IČ: 28308751
+DIČ: CZ28308751
+
+
+
+
+	Vypracovali:
+
+
+Viktor Schwarz
+
+
+	Obsah
+Úvod        5
+Co si připravit        5
+Stručně o GITu        5
+Vytvoření repozitáře, popis vývoje        5
+Popis aplikace DutyFree        6
+Vývoj        8
+Vytvoření projektu        8
+Správa produktů        8
+Modely        8
+Controller        9
+View        9
+Logika na straně klienta        10
+Přidání produktu        10
+Editace produktu        10
+Smazání produktu        11
+Logika na straně serveru        11
+Administration        11
+Insert        11
+Edit        12
+Delete        12
+Stylování        13
+Napojení databáze        13
+Vytvořit tabulku Products:        13
+Připravit následující procedury:        14
+Zavedení Dapperu na projekt:        14
+Přehled produktů        15
+Layout:        16
+Uživatelé a role        16
+Zavedení uživatelů        16
+Zabezpečení aplikace        18
+Objednávky        18
+Koupě produktu        18
+Mé objednávky        19
+Všechny objednávky        19
+Filtrování objednávek        19
+Rozšíření produktů        20
+Správa produktů        20
+Přehled produktů        21
+Rozšířené vyhledávání        22
+Našeptávač        22
+
+
+________________
+Verze:
+Verze
+	Datum
+	Autor
+	Popis
+	1.0
+	15. 04. 2022
+	Viktor Schwarz
+	Inicializační verze dokumentu
+	1.1
+	10. 05. 2022
+	Viktor Schwarz
+	Rozšíření zadání - databáze, Přehled produktů
+	1.2
+	11. 05. 2022
+	Viktor Schwarz
+	Uživatelé a zabezpečení
+	1.3
+	13. 05. 2022
+	Viktor Schwarz
+	Objednávky a rozšíření produktů
+	1.4
+	20. 05. 2024
+	Viktor Schwarz
+	Aktualizace deprecated snippetů, DB project
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+________________
+Úvod
+Cílem tohoto dokumentu je specifikace zadání pro aplikaci DutyFree (praxe).
+1. Co si připravit
+* Visual Studio
+* SourceTree (případně jiné verzovací GUI pro GIT)
+* Účet na BitBucket.org + založit repo
+* SQL Server - Developer Edition
+* SQL Server Management Studio
+* Skupina na Google Chatu
+
+
+   1. Stručně o GITu
+Verzovací systém umožňující sdílení a verzování projektů mezi počítači. Je možné se kdykoliv vrátit k předchozí stabilní verzi a revertovat nepovedené změny bez toho, aniž byste o svůj kód přišli.
+Lze ovládat přes příkazový řádek nebo si nainstalovat některé z četných GUI - na firmě se běžně používá SourceTree. Jsou ale alternativy, jako GitHub, GitKraken, GMaster, Fork, a jiné.
+Aby byly repozitáře Gitu dostupné mimo jedno PC, je potřeba využít některý z hostingů, jako je BitBucket, GitHub Desktop, GitLab, atd…
+Verzovací systém používá větve (Branche), do kterých lze rozdělit různé vývojové verze. Dělí se tak verze pro vývoj, testovací prostředí a produkční prostředí. Zároveň si každý vývojář řeší individuální úkoly do vlastních větví, aby bylo vše přehledné a snadno se dalo dohledat, co se kdy řešilo.
+   2. Vytvoření repozitáře, popis vývoje  
+V Bitbucket si vytvořte účty a repozitář (v horní liště “Create -> Repository”). Ideálně by měl existovat jeden “origin”, který si ostatní členové teamu forknou a posílají do něj Pull Requesty na své změny. Můžete ale usnadnit proces vývojem do jednoho společného repozitáře, kde si každý založí branch na aktuální úkol a společně pak mergují do “master” větve.
+Na diagramu je znázorněn workflow teamu na projektech v rámci naší firmy.
+________________
+   2. Popis aplikace DutyFree
+Cílem tohoto projektu je připravit klon aplikace DutyFree, kterou na firmě používáme ke správě a nákupu dobrot. Hlavní stránka pro uživatele obsahuje seznam produktů na skladě a možnost si je zakoupit, viz obrázek:
+  
+
+Další sekcí pro uživatele jsou objednávky, kde může sledovat své předchozí nákupy.
+  
+
+________________
+
+
+Aplikace obsahuje i sekci přístupnou pouze pro Administrátora, kde může upravovat, vkládat, nebo mazat produkty v systému.
+  
+________________
+
+   3. Vývoj
+Doporučený zdroj: aspnet/core/tutorials 
+   3. Vytvoření projektu
+Jako první commit v repozitáři by mělo být vytvoření projektu (C#) ASP.NET Core Web App (Model-View-Controller).  Pokud ho v nabídce Visual Studia nevidíte, bude potřeba doinstalovat nějaké SDK (.NET 9).
+Zároveň s vytvořením projektu je vhodné zavést soubor .gitignore, který zajistí, aby se neverzovaly nechtěné typy souborů a složky. Pokud máte naklonovaný repozitář, tak v bitbucket se v defaultním nastavení automaticky soubor .gitignore vytvoří v rootu repozitáře. Ten upravte v textovém editoru - vygenerovat se dá například na stránce https://www.toptal.com/developers/gitignore/ po zadání klíčových slov pro technologického stacku projektu (zde bych volil Csharp, ASPNETCore).
+Takto připravený projekt by měl být zaverzován - v SourceTree Commit+Push.
+Následně by si ho měl každý člen teamu stáhnout k sobě (Pull). Vývoj by měl vždy probíhat do oddělené branch pro danou problematiku (nová Branch vycházející z větve Master).
+Na pozadí view pro Index bude AdministrationViewModel (root/ViewModels/Products), který bude obsahovat property list produktů.
+   4. Správa produktů
+   1. Modely
+Základní model bude Product (umístit do root/Models/Products), který by měl mít následující property:
+   * ProductID (int)
+   * DateCreated (datetime)
+   * CreatedBy (int)
+   * DateUpdated (datetime)
+   * UpdatedBy (int)
+   * IsDeleted (bool)
+   * Name (string)
+   * Price (int)
+   * Quantity (int)
+   * ImageUrl (string)
+   * Image (IFormFile)
+K vytvoření sekce správy produktů se připraví ViewModel AdministrationViewModel (doporučil bych umístit do root/ViewModels/Products). Ten bude obsahovat kolekci produktů (IList<Product> Products { get; set; }).
+   2. Controller
+Vytvořit ProductsController, který bude obsluhovat akce spojené s produkty.
+Pro sekci správy produktů se vytvoří následující Actions:
+   * Administration (GET)
+   * Edit (PUT)
+   * Insert (POST)
+   * Delete (DELETE)
+Pro začátek budeme používat ručně připravená data, která později nahradíme databází. Pro tuto chvíli vytvoříme statický field _products v ProductsControlleru, do kterého přidáme pár testovacích produktů.
+private static List<Product> _products = new List<Product>{new Product{ Name = “Pepsi”, Price = 42 } }; //atd
+Action Administration bude vypadat následovně:
+public IActionResult Administration()
+{
+ var vm = new AdminViewModel();
+ vm.Products = _products;
+ return View(vm);
+}
+   3. View
+Pro správu se vytvoří View Administration, které bude obsahovat tabulku produktů viz obrázek:
+  
+
+________________
+
+
+V tabulce budou sloupce:
+   * Produkt
+   * Obrázek
+   * Cena za ks
+   * Aktuální množství
+   * Akční tlačítka – editovat a smazat
+Nad tabulkou bude tlačítko přidat (plus vpravo nahoře).
+Do tabulky se budou dynamicky renderovat produkty z ViewModelu (použít foreach cyklus k vykreslení řádků pro produkty ve ViewModelu).
+   4. Logika na straně klienta
+Přidání produktu
+Po kliknutí na tlačítko přidat bude do tabulky na první řádek přidán úplně prázdný řádek s inputy pro:
+   * Název (text)
+   * Obrázek (file)
+   * Cena (number)
+   * Množství (number)
+   * Akční tlačítka – uložit a zahodit
+Všechna pole jsou povinná.
+Obrázek = input pro soubor (png a jpg – omezit v HTML!)
+Zahodit je tlačítko, které daný řádek odstraní z tabulky.
+Uložit je tlačítko, které odešle data na server, kde proběhne uložení a jako odpověď ze serveru přichází model produktu, kde je vyplněno ProductId a ImageUrl. Při této odpovědi se z inputu musí stát text – input pro obrázek nahrazen fyzickým obrázkem.
+Funkce na vložení prázdného řádku s inputy pro založení nového produktu může vypadat následovně. Jiným řešením by případně mohlo být PartialView a dotáhnout si ho Ajaxem.
+function createRow() {
+   const table = $('table tbody');
+   table.prepend(
+      '<tr>'
+        + '<td class="name">'
+        + '<input type="text" class="form-control" name="Name" />'
+        + '</td>'
+        + '<td class="image">'
+        + '<input type="file" class="form-control" name="Image" />'
+        + '</td>'
+        + '<td class="price">'
+        + '<input type="number" class="form-control" name="Price" />'
+         + '</td>'
+         + '<td class="quantity">'
+         + '<input type="number" class="form-control" name="Quantity" />'
+         + '</td>'
+         + '<td class="buttons">'
+         + '<button type="button" class="btn btn-success
+btn-save">Uložit</button>'
+         + '<button type="button" class="btn btn-success btn-discard">Zahodit</button>'
+         + '</td>'
+         + '</tr>'
+     );
+}
+Editace produktu
+Po kliknutí na editovat se z textu daného řádku stávají inputy s předvyplněným textem, který byl v buňkách. Vzniklý řádek s inputy vypadá stejně, jako obrázek u vkládání.
+Obrázek není předvyplněn, obrázek může být nyní prázdný. Pro server to znamená, že nedochází ke změně obrázku. Pokud je obrázek vybrán nový, je nahrazen při uložení tímto novým.
+Z tlačítek editovat a zahodit se stávají tlačítka uložit a zahodit. Uložit odešle změny na server a jako odpověď ze serveru přichází model produktu s novými daty (minimálně nové ImageUrl, pokud byl nahrán nový obrázek). Z inputů se opět stává text. Tlačítko zahodit neodesílá nic na server, inputy mění zpět text a zobrazuje se původní text, který byl v buňkách před editací.
+Pokud chceme získat současnou hodnotu atributů produktu pro editaci, lze použít tento script:
+const row = $(this).closest('tr');
+let name = row.find('.name').text(),
+   price = row.find('.price').text(),
+   quantity = row.find('.quantity').text(),
+   imageUrl = row.find('.image img').attr('src');
+Smazání produktu
+Po kliknutí na smazat se na server pošle ID produktu, který má být smazán. Pokud přijde success, musí dojít k vymazání řádku z tabulky.
+Pro inspiraci lze smazání produktu řešit následujícím způsobem (nabindování on-click eventu v document.ready metodě a implementace funkce deleteProduct, která se po kliku volá):
+$(document).ready(() => {
+ $(document).on('click', '.btn-delete', deleteProduct);
+});
+function deleteProduct() {
+   let id = $(this).data('id');
+   $.ajax({
+       url: '@Url.Action("Delete")',
+       data: { id: id }
+   });
+    $(this).closest('tr').remove();
+}
+Aby se správně nabidnoval onclick event z document.ready metody, je potřeba mít na tlačítku pro mazání třídu btn-delete a data atribut s ID produktu, viz ukázka:
+<button class="btn btn-delete" data-id="@product.ProductID">Smazat</button>
+   5. Logika na straně serveru
+Administration
+Action Administration vrací model AdministrationViewModel s naplněným listem produktů – dokud nebude zavedena databáze (bude v pozdějších úkolech), bude použit statický list.
+Insert
+Action s jediným parametrem - model Produktu. Model ještě nemá vyplněno ProductId a ImageUrl. Musí obsahovat Name, Image, Price, Quantity.
+Bude zajištěno uložení obrázku na server např.: do složky Content/Images/Products <- tato složka se nebude commitovat (doplnit do .gitignore)
+Jméno obrázku nebude ponecháno od uživatele, ale bude vygenerován Guid, doplněn o původní formát obrázku. Do ImageUrl produktu bude vložena relativní cesta obrázku 
+~/Content/Images/Products/<guid>.<koncovka>
+Produkt je uložen do databáze (listu).
+Jako odpověď server vrací entitu produktu, kde je již vyplněno ProductId a ImageUrl.
+________________
+Edit
+Action s jediným parametrem - model Produktu. Musí mít vyplněno ProductId, aby bylo možné identifikovat, který produkt je editován. Image nemusí být vyplněn – nedochází ke změně obrázku. Pokud je Image vyplněn, musí být použita logika na uložení obrázku a naplnění ImageUrl.
+Jako odpověď server vrací entitu produktu, kde může být nový ImageUrl.
+Delete
+Na server přichází parametr ProductId a podle tohoto ID je produkt smazán.
+Server odpovídá successem.
+________________
+
+
+Tip:
+Pro získání cesty k rootu serveru při ukládání obrázku na server je potřeba využít IWebHostingEnvironment, který bude injectován v konstruktoru ProductsControlleru.
+private readonly IWebHostEnvironment _environment;
+public ProductsController(IWebHostEnvironment environment)
+{
+ _environment = environment;
+}
+________________
+
+
+   6. Stylování
+Nastylovat dle předlohy:
+  
+
+   5. Napojení databáze
+V SQL Server Management Studiu (SSMS) vytvořit databázi s collation v options nastavenou na SQL_Latin1_General_CP1_CI_AS. 
+Vytvořit tabulku Products:
+
+
+ProductId (INT; Primary Key; identity)
+DateCreated (DATETIME; defaultně GETDATE())
+CreatedBy (INT; defaultně 0)
+DateUpdated (DATETIME; defaultně GETDATE())
+UpdatedBy (INT; defaultně 0)
+IsDeleted (BIT; defaultně 0)
+Name (NVARCHAR(512))
+Price (INT)
+Quantity (INT)
+ImageUrl (NVARCHAR(1024))
+________________
+
+
+Připravit následující procedury:
+
+
+ProcProducts
+Procedura na select všech produktů z DB – selectovat by se měly všechny produkty bez ohledu na to, že jejich Quantity je na 0. Nebudou se však selectovat produkty, kdy IsDeleted = 1.
+ProcProductInsert
+Procedura na vložení nového produktu. Vstupní parametry by měly být Name, ImageUrl, Quantity a Price. ProductId se nastavuje automaticky pomocí identity. DateCreated, DateUpdated, CreatedBy, UpdatedBy a IsDeleted se nastavuje automaticky pomocí default constraint na sloupci.
+ProcProductEdit
+Procedura Edit by měla mít vstupní parametry ProductId, Name, ImageUrl, Quantity, Price. Podle productId se bude updatovat. ImageUrl může být NULL, anebo nová hodnota. Pomocí ISNULL nastavit novou hodnotu, nebo použít již existující. Zde musí být nastaveno DateUpdated a UpdatedBy (jelikož zatím nejsou uživatelé, tak nastavit jenom DateUpdated na aktuální čas).
+ProcProductDelete
+Procedura na smazání produktu bude přijímat ProductId. Pomocí tohoto UPDATUJE záznam, kdy nastaví IsDeleted a DateUpdated.
+Zavedení Dapperu na projekt:
+
+
+Do projektu přidat nuget Dapper (jak na to) . Přidat třídu Database (složkově do root/Data), která bude statická a její metody taktéž.
+Do třídy přidat všechny potřebné metody na práci s produkty včetně implementace - volání připravených procedur.
+
+
+Zavedení DB projektu:
+Pro verzování databáze využijte Database Project. Do vašeho solution DutyFree přidejte nový projekt - SQL Server Database Project. Do něj naimportujte vytvořenou databázi v SSMS viz Návod.
+Změny v DB můžete pak dělat přímo ve Visual Studiu a následně si je propagovat do DB pomocí Publish (tím si také založí DB u sebe ostatní)
+________________
+
+
+   6. Přehled produktů
+Sekce pro uživatele se seznamem produktů a možností nákupu.
+Zavedení přehledu produktů, který vidí každý uživatel po přihlášení – kartičkový přehled viz předloha.
+Kartičky mají pevně danou velikost (nemění se podle obsahu) a jsou ve 4 sloupcích.
+Obrázek
+Jméno
+Počet kusů skladem
+Cena
+Tlačítko koupit
+  
+
+Nad přehled produktů bude přidáno vyhledávání – input pro zadání jména produktu a tlačítko vyhledat.
+V inputu nebude našeptávač. Vyhledávat se bude po zadání textu a stisknutí tlačítka enter, nebo kliknutím na tlačítko Vyhledat.
+Vyhledávání bude case insensitive a accent insensitive, nejlépe řešit v DB – pokud existuje produkt Čokoláda, musí být vyhledatelný podle např.: Lada.
+  
+
+________________
+Layout:
+Aplikace bude mít na každé stránce navigaci
+Vlevo logo aplikace.
+Vpravo menu s dropdownem (zatím s položkami produkty a správa produktů).
+V patičce © 2021  Business Logic s.r.o (rok se musí inkrementovat automaticky).
+Na každé stránce bude header nad obrázkem
+   7. Uživatelé a role
+   8. Zavedení uživatelů
+
+
+Do databáze přidat tabulku [Users]:
+UserId (INT; primary key, identity)
+Name (NVARCHAR(256))
+Email (NVARCHAR(256))
+ImageUrl (VARCHAR(1024))
+Role (INT)
+Bude zavedeno i jako entita (Model) v projektu. Role bude řešena jako enum, kdy role budou mít hodnoty  User a Admin.
+Zavedení nového controlleru Security s action Index, Login, Logout.
+Index vypíše všechny uživatele, kteří jsou v DB do tabulky a na každém řádku bude tlačítko Přihlásit se. Po kliknutí na tlačítko bude daný uživatel s danou rolí přihlášen.
+________________
+
+
+Login metoda může vypadat následovně:
+[AllowAnonymous]
+public async Task<IActionResult> Login(int userId)
+{
+        var user = Database.GetUser(userId);
+        var claims = new List<Claim>
+        {
+                new Claim("UserId", user.UserId.ToString(), ClaimValueTypes.Integer),
+                new Claim("Name", user.Name),
+                new Claim("Email", user.Email),
+                new Claim("ImageUrl", user.ImageUrl ?? string.Empty),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+        };
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+        var properties = new AuthenticationProperties();
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
+        return RedirectToAction("Index","Home");
+}
+V Program.cs je potřeba doplnit metodu autentizace:
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options => {
+        options.LoginPath = "/Security/Index";
+    });
+A také zajistit, aby Program.cs obsahovala 
+app.UseAuthentication();
+        app.UseAuthorization();
+User i Admin uvidí v menu na posledním místě tlačítko Odhlásit se.
+Zavedení Authorize(Policy = "AdminOnly") a AllowAnonymous atributů na příslušná místa.
+
+
+Nastavit aplikaci tak, aby se uživatel s rolí User nedostal do správy produktů.
+K tomu bude potřeba doplnit Policy
+________________
+   7. Zabezpečení aplikace
+
+
+Admin by měl vidět správu produktů, user již ne (odkaz by neměl být k nalezení ani ve zdrojovém kódu stránky).
+Zavedení Authorize(Policy = "AdminOnly") a AllowAnonymous atributů na příslušná místa.
+Nastavit aplikaci tak, aby se uživatel s rolí User nedostal do správy produktů.
+builder.Services.AddAuthorization(options => {
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
+
+
+   9. Objednávky
+Zavést tabulku Orders
+OrderId (INT; primary key, identity)
+DateCreated (DATETIME; GETDATE)
+Name (datový typ jako name v tabulce Products)
+Price (datový typ jako price v tabulce Products)
+UserId (INT; foreign key na tabulku Users)
+ProductId (INT; foreign key na tabulku Products)
+   8. Koupě produktu
+Na přehledu produktů zavést logiku kliknutí na tlačítko koupit.
+Koupě bude probíhat asynchronně na pozadí – na server se pošle ajax, založí se záznam v databázi, a při success stavu se mění počet dostupných kusů.
+Pohlídat aby uživatel neviděl v nabídce produkty, které nejsou skladem (pokud koupí poslední kus, zmizí ze seznamu). Měla by proběhnout kontrola ještě i na serveru, pokud někdo koupil poslední kus mezi tím, co si uživatel načetl seznam produktů a tím, kdy si ho koupí. 
+________________
+
+
+   9. Mé objednávky
+Vytvoření nové sekce (controller apod), kde bude přehled mých objednávek v tabulce viz obrázek.
+  
+
+Každá objednávka musí být smazatelná, ale pouze do 24 hodin od koupě produktu. Pokud dojde ke smazání, musí dojít k odstranění záznamu z tabulky Orders a v tabulce Products ke zvýšení kvantity.
+   10. Všechny objednávky
+Zavedení nového přehledu všech objednávek s přístupem jen pro admina. Admin uvidí všechny objednávky všech uživatelů – nemá možnost je smazat.
+Využít proceduru, která selectuje mé objednávky.
+   11. Filtrování objednávek
+Mé objednávky a objednávky všech budou mít nad tabulkou dva inputy s daty. Defaultně bude datum od vyplněno prvním dnem v měsíci a datum do aktuálním dnem. Podle těchto dat budou filtrovány záznamy.
+Filtrování proběhne automaticky při změně data. Pokud by bylo datum od vyšší než datum do, musí dojít k jejich prohození.
+  
+
+DatePicker bude česky s českým formátováním, viz screen.
+Pro datepicker použít https://eonasdan.github.io/bootstrap-datetimepicker/ (nebo najít aktuálnější verzi)
+   10. Rozšíření produktů
+   1. Správa produktů
+Do správy produktů přidat kategorii, novinku a slevu. S kategoriemi se pojí i nová tabulka Categories.
+V tabulce Categories bude 5 záznamů – #Svačina, #Slané, #Sladké, #Nápoje, #Zmrzlina.
+Výběr kategorií bude řešen pomocí dropdown menu. 
+  
+
+________________
+
+
+Novinka i sleva budou implementovány checkboxem. Při zakliknutí slevy se objeví nový input pro cenu po slevě.
+  
+
+Vybraná kategorie, sleva a novinka budou zobrazeny taky v řádku produktu, pokud není editován. Viz obrázek před editací.
+  
+
+
+
+   2. Přehled produktů
+Na přehledu produktů, v kartičce, budou zobrazeny ikony podle toho, jestli je produkt ve slevě a jako novinka.
+  
+
+Produkt označen jako sleva má žluté kolečko a z něm procentuální výpočet slevy (děje se dynamicky při renderování, samotná % nejsou nikde uložena). Pozor, pokud někdo do slevy zadá vyšší cenu, než je cena před, zobrazí se např +20 %.
+
+
+Produkt označen jako novinka bude mít modrou “bublinu” s textem NEW.
+Obě ikony budou řešeny pomocí CSS, nikoliv obrázků.
+   3. Rozšířené vyhledávání
+Pod vyhledávačem produktů budou zobrazeny kategorie, podle kterých lze filtrovat produkty. Budou zde
+   * #MojeOblíbené
+   * #OblíbenéOstatních
+   * Sleva
+   * Novinka
+   * 5 kategorií z tabulky Categories
+  
+
+#MojeOblíbené funguje tak, že se aplikace podívá na objednávky za tento měsíc a seřadí produkty podle nejčastěji nakupovaných – musí být vypsán stejný počet produktů jako před vyfiltrováním. Jedná se tedy jen o řazení!
+#OblíbenéOstatních funguje podobně jako moje oblíbené, aplikace se však podívá na objednávky všech uživatelů (mimo daného uživatele) a opět provede seřazení.
+Ostatní heštegy fungují jako filtry, které omezují výběr.
+Musí být bráno v potaz i to, že v jednu chvíli lze filtrovat/řadit podle heštěgů a textu. Můžu vyhledávat např.: 3bit a následně zakliknout #Sleva – pokud se nic nejmenuje 3bit, nebude nic zobrazeno, pokud se něco jmenuje 3bit a je položka ve slevě, bude zobrazena pouze ta.
+   4. Našeptávač
+Při zadávání textu do vyhledávacího inputu bude zaveden našeptávač, který zjistí, jaké produkty obsahují daný řetězec znaků ve svém názvu (vše realtime na klientovi, case insensitive a accent insensitive). Pod inputem bude dropdown s produkty, které obsahují daný řetězec a daný řetězec bude zvýrazněn.
+Již při prvním znaku se zobrazuje našeptávač. Pokud v inputu není žádný znak, nezobrazuje se našeptávač.
+Po kliknutí na řádek v našeptávači je celý název produktu doplněn do vyhledávače a automaticky se provede vyhledání.
+Na pravé straně vyhledávače bude křížek, který vyresetuje všechno filtrování.
+  
+
+
+
+
+
+ Description: text logo.wmf 
+
+	BUSINESS LOGIC S.R.O., VĚDECKO-TECHNICKÝ PARK (VTP)
+NAD STRÁNĚMI 5656, 760 05 ZLÍN, WWW.BLOGIC.CZ, INFO@BLOGIC.CZ
+	Strana |
